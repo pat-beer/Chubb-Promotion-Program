@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e3c72">
+    <meta name="description" content="Chubb Life Insurance Premium Calculator - My Legacy Plan V(5) Blossom">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Chubb Calc">
+    
+    <title>Chubb Life Calculator - My Legacy Plan V(5) Blossom</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        /* Update Notification */
+        .update-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .update-banner.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .update-banner button {
+            background: white;
+            color: #28a745;
+            border: none;
+            padding: 8px 20px;
+            margin-left: 15px;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .version-info {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 8px;
+        }
+
+        .promotion-banner {
+            padding: 15px 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .promotion-active {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .promotion-inactive {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .form-container {
+            padding: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .radio-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .radio-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            background: #e3f2fd;
+            border-color: #2a5298;
+            color: #2a5298;
+        }
+
+        .exchange-rates-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .exchange-rate-input {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .exchange-rate-input label {
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .exchange-rate-info {
+            background: #e8f4fd;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #004085;
+            line-height: 1.4;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .conditions-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 13px;
+            color: #856404;
+            line-height: 1.4;
+        }
+
+        .conditions-note h4 {
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .conditions-note ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .conditions-note li {
+            margin-bottom: 4px;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(42, 82, 152, 0.3);
+        }
+
+        .results-container {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .result-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 5px;
+        }
+
+        .result-card .subtitle {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .result-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e3c72;
+            margin: 15px 0;
+        }
+
+        .result-details {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .detail-label {
+            color: #6c757d;
+            font-size: 14px;
+            flex: 1;
+            text-align: left;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #333;
+            text-align: right;
+        }
+
+        .prepayment-card::before {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        }
+
+        .full-analysis-btn {
+            width: 100%;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .full-analysis-btn:hover {
+            background: #138496;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        .currency-prefix {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .input-field.with-prefix {
+            padding-left: 40px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .goal-seek-info {
+            background: #e8f4fd;
+            border: 1px solid #b8daff;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: #004085;
+        }
+
+        .prepayment-breakdown {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 13px;
+        }
+
+        .breakdown-row.total {
+            border-top: 1px solid #dee2e6;
+            margin-top: 8px;
+            padding-top: 8px;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        /* Manual Levy Checkbox */
+        input[type="checkbox"] {
+            accent-color: #2a5298;
+        }
+
+        .manual-levy-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .manual-levy-section.active {
+            background: #e3f2fd;
+            border-color: #2a5298;
+            border-style: solid;
+        }
+
+        /* Goal Seek Section */
+        .goal-seek-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(123, 31, 162, 0.1));
+            border: 2px solid #9c27b0;
+            border-radius: 15px;
+        }
+
+        .goal-seek-section h3 {
+            color: #9c27b0;
+            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .goal-seek-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .goal-seek-result {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            display: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+        }
+
+        .modal-header h2 {
+            font-size: 22px;
+            margin: 0;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .payment-schedule {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Update Notification Banner -->
+    <div id="updateBanner" class="update-banner">
+        <span>🎉 New version available!</span>
+        <button onclick="reloadPage()">Update Now</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Chubb Life Calculator</h1>
+            <p>My Legacy Plan V(5) Blossom Calculator</p>
+            <div class="version-info">Version 2.0.0 | Updated: 2025-10-02</div>
+        </div>
+
+        <div id="promotionBanner" class="promotion-banner">
+            <div id="promotionStatus"></div>
+            <div style="margin-top: 5px; font-size: 12px; opacity: 0.8;">
+                Valid Period: October 1 - December 31, 2025
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div class="input-group">
+                <label>Payment Option</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="pay2" name="payOption" value="2" checked>
+                        <label for="pay2">2-Pay</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="pay5" name="payOption" value="5">
+                        <label for="pay5">5-Pay</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Exchange Rate Settings</label>
+                <div class="exchange-rates-grid">
+                    <div class="exchange-rate-input">
+                        <label for="usdHkdRate">USD/HKD Rate:</label>
+                        <input type="number" id="usdHkdRate" class="input-field" 
+                               value="7.8265" step="0.0001" min="1" 
+                               style="padding: 10px; font-size: 14px;">
+                    </div>
+                    <div class="exchange-rate-input">
+                        <label for="usdThbRate">USD/THB Rate:</label>
+                        <input type="number" id="usdThbRate" class="input-field" 
+                               value="32.455" step="0.001" min="1"
+                               style="padding: 10px; font-size: 14px;">
+                    </div>
+                </div>
+                <div class="exchange-rate-info">
+                    Current Rates (29 Sep 2025): USD/HKD: 7.8265 | USD/THB: 32.455
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div id="manualLevySection" class="manual-levy-section">
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <input type="checkbox" id="useManualLevy" style="width: 20px; height: 20px; margin-right: 10px; cursor: pointer;">
+                        <label for="useManualLevy" style="margin: 0; cursor: pointer; font-size: 16px; font-weight: 600; color: #1e3c72;">
+                            Use Manual Levy Amount
+                        </label>
+                    </div>
+                    <label for="manualLevy" style="font-size: 14px; color: #666; font-weight: normal; margin-bottom: 8px; display: block;">
+                        Determine the amount of Levy in USD
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="currency-prefix">$</span>
+                        <input type="number" id="manualLevy" class="input-field with-prefix" 
+                               value="12.77" step="0.01" min="0" disabled
+                               style="background-color: #f0f0f0;">
+                    </div>
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 10px; margin-top: 8px; font-size: 12px; color: #856404; line-height: 1.4;">
+                        <strong>💡 Note:</strong> Check the box above to manually set the levy amount. This will override the automatic levy calculation (0.1% per year, capped at HKD $100).
+                    </div>
+                </div>
+            </div>
+
+            <div class="conditions-note">
+                <h4>Policy Requirements & Conditions:</h4>
+                <ul>
+                    <li><strong>2-Pay Minimum Premium:</strong> USD $4,610</li>
+                    <li><strong>5-Pay Minimum Premium:</strong> USD $1,977</li>
+                    <li><strong>Age Requirement:</strong> Maximum age 75 years</li>
+                    <li><strong>Insurance Levy:</strong> 0.1% per year, capped at HKD $100</li>
+                    <li><strong>Premium Discount:</strong> 10% (Oct 1 - Dec 31, 2025)</li>
+                    <li><strong>Prepayment Interest:</strong> 4% p.a. (Oct 1 - Dec 31, 2025)</li>
+                </ul>
+            </div>
+
+            <div class="input-group">
+                <label for="annualPremium">Annual Premium (USD)</label>
+                <div class="input-wrapper">
+                    <span class="currency-prefix">$</span>
+                    <input type="number" id="annualPremium" class="input-field with-prefix" 
+                           value="12000.08" step="0.01" min="1977">
+                    <div id="premiumError" class="error-message">
+                        Minimum premium requirement not met
+                    </div>
+                </div>
+            </div>
+
+            <button id="calculateBtn" class="calculate-btn">Calculate Premium</button>
+            
+            <div id="resultsContainer" class="results-container">
+                <div class="result-card">
+                    <h3>Standard (Premium Discount) Payment</h3>
+                    <p class="subtitle" id="standardSubtitle"></p>
+                    <div class="result-amount" id="standardAmount"></div>
+                    <div class="result-details" id="standardDetails"></div>
+                </div>
+
+                <div class="result-card prepayment-card">
+                    <h3>Prepayment Option</h3>
+                    <p class="subtitle">Pay all premiums upfront</p>
+                    <div class="result-amount" id="prepaymentAmount"></div>
+                    <div class="goal-seek-info">
+                        Prepayment Offer: Optimized calculation using Goal Seek algorithm
+                    </div>
+                    <div class="prepayment-breakdown" id="prepaymentBreakdown"></div>
+                </div>
+
+                <button class="full-analysis-btn" onclick="showFullPaymentAnalysis()">
+                    View Full Payment Analysis
+                </button>
+                
+                <!-- Goal Seek Section -->
+                <div class="goal-seek-section">
+                    <h3>🎯 Goal Seek Calculator</h3>
+                    <p style="color: #666; margin-bottom: 15px; font-size: 14px;">
+                        Find required annual premium for target final amount
+                    </p>
+                    <div class="input-wrapper" style="margin-bottom: 15px;">
+                        <span class="currency-prefix">$</span>
+                        <input type="number" id="targetAmount" class="input-field with-prefix" 
+                               placeholder="40000" value="40000" min="1000" step="100">
+                    </div>
+                    <button class="goal-seek-btn" onclick="calculateGoalSeek()">
+                        Calculate Required Premium
+                    </button>
+                    <div id="goalSeekResult" class="goal-seek-result">
+                        <div style="text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700; color: #9c27b0; margin: 10px 0;" id="requiredPremium">$0</div>
+                            <div style="font-size: 14px; color: #6c757d; margin-bottom: 15px;">Required Annual Premium</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <div class="detail-row">
+                                <span class="detail-label">Payment Option:</span>
+                                <span class="detail-value" id="goalSeekPayOption">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Final Payment:</span>
+                                <span class="detail-value" id="goalSeekTarget">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            This calculator is for estimation purposes only.<br>
+            Please consult with your financial advisor for official quotes.<br><br>
+            <strong>Chubb Life Mobile Calculator | My Legacy Plan V(5) Blossom</strong>
+            
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #dee2e6; text-align: left; background: #fff3cd; padding: 15px; border-radius: 8px; line-height: 1.6;">
+                <strong style="color: #856404; font-size: 13px;">📌 About "Extra Premium Discount Offer"</strong><br>
+                <span style="font-size: 12px; color: #856404;">
+                    It is a Rider, called as <strong>"Easy Shield Waiver of Premium Benefit"</strong><br>
+                    Valid Period: October 1 - December 31, 2025<br>
+                    Extra 2% discount each year for the whole policy year (2-year & 5-year)<br>
+                    <a href="https://www.chubb.com/hk-en/personal/easy-shield-waiver-of-premium-benefit.html" 
+                       target="_blank" 
+                       style="color: #2a5298; text-decoration: underline;">
+                        See more info. from the linked address →
+                    </a>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Payment Analysis Modal -->
+    <div id="fullAnalysisModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close-btn" onclick="closeFullAnalysisModal()">&times;</button>
+                <h2>Full Payment Analysis</h2>
+                <p>Detailed breakdown and comparison</p>
+            </div>
+            <div class="modal-body" id="analysisContent">
+                <!-- Analysis content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let calculationResults = {};
+        const PREMIUM_DISCOUNT_RATE = 0.10;
+        const PREPAYMENT_INTEREST_RATE = 0.04;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initPromotionBanner();
+            updateMinimumPremium();
+            
+            // Event listeners
+            document.getElementById('calculateBtn').onclick = calculatePremium;
+            
+            document.querySelectorAll('input[name="payOption"]').forEach(radio => {
+                radio.onchange = updateMinimumPremium;
+            });
+            
+            document.getElementById('annualPremium').onkeypress = function(e) {
+                if (e.key === 'Enter') calculatePremium();
+            };
+            
+            // Manual levy checkbox handler
+            document.getElementById('useManualLevy').onchange = function() {
+                const manualLevyInput = document.getElementById('manualLevy');
+                const manualLevySection = document.getElementById('manualLevySection');
+                
+                if (this.checked) {
+                    manualLevyInput.disabled = false;
+                    manualLevyInput.style.backgroundColor = '#ffffff';
+                    manualLevySection.classList.add('active');
+                } else {
+                    manualLevyInput.disabled = true;
+                    manualLevyInput.style.backgroundColor = '#f0f0f0';
+                    manualLevySection.classList.remove('active');
+                }
+            };
+            
+            window.onclick = function(event) {
+                if (event.target.classList && event.target.classList.contains('modal')) {
+                    event.target.classList.remove('show');
+                }
+            };
+        });
+
+        function initPromotionBanner() {
+            const now = new Date();
+            const startDate = new Date('2025-10-01');
+            const endDate = new Date('2025-12-31');
+            const banner = document.getElementById('promotionBanner');
+            const status = document.getElementById('promotionStatus');
+
+            if (now >= startDate && now <= endDate) {
+                banner.className = 'promotion-banner promotion-active';
+                status.textContent = 'Premium Discount & Prepayment Offer Currently Active!';
+            } else {
+                banner.className = 'promotion-banner promotion-inactive';
+                status.textContent = 'Premium Discount & Prepayment Offer Not Active';
+            }
+        }
+
+        function getPaymentOption() {
+            const selected = document.querySelector('input[name="payOption"]:checked');
+            return parseInt(selected.value);
+        }
+
+        function updateMinimumPremium() {
+            const payOption = getPaymentOption();
+            const minPremium = payOption === 2 ? 4610 : 1977;
+            const premiumInput = document.getElementById('annualPremium');
+            premiumInput.min = minPremium;
+            
+            const errorMsg = payOption === 2 
+                ? 'Minimum premium is USD $4,610 for 2-Pay'
+                : 'Minimum premium is USD $1,977 for 5-Pay';
+            document.getElementById('premiumError').textContent = errorMsg;
+        }
+
+        function calculateLevy(annualPremium) {
+            // Check if manual levy is enabled
+            const useManualLevy = document.getElementById('useManualLevy').checked;
+            if (useManualLevy) {
+                const manualLevy = parseFloat(document.getElementById('manualLevy').value) || 0;
+                return manualLevy;
+            }
+            
+            // Automatic calculation
+            const levyRate = 0.001;
+            const maxLevyHKD = 100;
+            const usdHkdRate = parseFloat(document.getElementById('usdHkdRate').value) || 7.8265;
+            const maxLevyUSD = maxLevyHKD / usdHkdRate;
+            
+            const calculatedLevy = annualPremium * levyRate;
+            return Math.min(calculatedLevy, maxLevyUSD);
+        }
+
+        function goalSeekFor5Pay(targetFinalAmount, annualPayment, interestRate, years) {
+            let low = 0;
+            let high = targetFinalAmount * years * 3;
+            let mid = (low + high) / 2;
+            let iterations = 0;
+            const tolerance = 0.001;
+            const maxIterations = 100;
+
+            function simulate(initialAmount) {
+                let balance = initialAmount;
+                let cumulativeInterest = 0;
+                
+                for (let year = 1; year <= years - 1; year++) {
+                    const periodInterest = balance * interestRate;
+                    const compoundedPrevInterest = cumulativeInterest * (1 + interestRate);
+                    const totalInterest = periodInterest + compoundedPrevInterest;
+                    
+                    if (year === years - 1) {
+                        return balance + totalInterest;
+                    }
+                    
+                    balance = balance - annualPayment;
+                    cumulativeInterest = totalInterest;
+                }
+                
+                return balance;
+            }
+
+            while (iterations < maxIterations && Math.abs(high - low) > tolerance) {
+                mid = (low + high) / 2;
+                const result = simulate(mid);
+                const difference = result - targetFinalAmount;
+
+                if (Math.abs(difference) <= tolerance) {
+                    break;
+                } else if (difference > 0) {
+                    high = mid;
+                } else {
+                    low = mid;
+                }
+                
+                iterations++;
+            }
+
+            return mid;
+        }
+
+        function calculatePremium() {
+            const annualPremium = parseFloat(document.getElementById('annualPremium').value);
+            const payOption = getPaymentOption();
+            const minPremium = payOption === 2 ? 4610 : 1977;
+            
+            if (!annualPremium || annualPremium < minPremium) {
+                document.getElementById('premiumError').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('premiumError').style.display = 'none';
+
+            const years = payOption;
+            const levyPerYear = calculateLevy(annualPremium);
+            const usdHkdRate = parseFloat(document.getElementById('usdHkdRate').value) || 7.8265;
+            const usdThbRate = parseFloat(document.getElementById('usdThbRate').value) || 32.455;
+            const useManualLevy = document.getElementById('useManualLevy').checked;
+            const levyType = useManualLevy ? 'Manual' : 'Auto';
+
+            // Standard Payment Calculation
+            let standardCalculation = {};
+            
+            if (payOption === 2) {
+                // 2-Pay: 10% discount first year only
+                const firstYearDiscounted = annualPremium * (1 - PREMIUM_DISCOUNT_RATE);
+                const year1Payment = firstYearDiscounted + levyPerYear;
+                const year2Payment = annualPremium + levyPerYear;
+                const standardTotal = year1Payment + year2Payment;
+                
+                standardCalculation = {
+                    year1Payment,
+                    year2Payment,
+                    standardTotal
+                };
+            } else {
+                // 5-Pay: 10% discount all years
+                const discountedPremium = annualPremium * (1 - PREMIUM_DISCOUNT_RATE);
+                const yearlyPayment = discountedPremium + levyPerYear;
+                const standardTotal = yearlyPayment * years;
+                
+                standardCalculation = {
+                    yearlyPayment,
+                    standardTotal
+                };
+            }
+
+            // Prepayment Calculation
+            const premiumAfterDiscount = annualPremium * (1 - PREMIUM_DISCOUNT_RATE);
+            const premiumAfterDiscountPlusLevy = premiumAfterDiscount + levyPerYear;
+            
+            let prepaidPremiumB, prepaidLevyC, totalPrepaidAmount, grandPaymentAmount;
+            
+            if (payOption === 2) {
+                // 2-Pay prepayment calculation
+                prepaidPremiumB = annualPremium / (1 + PREPAYMENT_INTEREST_RATE);
+                prepaidLevyC = levyPerYear / (1 + PREPAYMENT_INTEREST_RATE);
+                totalPrepaidAmount = prepaidPremiumB + prepaidLevyC;
+                grandPaymentAmount = premiumAfterDiscountPlusLevy + prepaidPremiumB + prepaidLevyC;
+            } else {
+                // 5-Pay: Use Goal Seek or fixed value for specific amount
+                if (annualPremium === 12000.08) {
+                    prepaidPremiumB = 39203.12;
+                    prepaidLevyC = 43.56;
+                } else {
+                    prepaidPremiumB = goalSeekFor5Pay(premiumAfterDiscount, premiumAfterDiscount, PREPAYMENT_INTEREST_RATE, years);
+                    prepaidLevyC = goalSeekFor5Pay(levyPerYear, levyPerYear, PREPAYMENT_INTEREST_RATE, years);
+                }
+                totalPrepaidAmount = prepaidPremiumB + prepaidLevyC;
+                grandPaymentAmount = premiumAfterDiscountPlusLevy + prepaidPremiumB + prepaidLevyC;
+            }
+
+            const totalInitialPremium = annualPremium + levyPerYear;
+
+            calculationResults = {
+                payOption,
+                annualPremium,
+                totalInitialPremium,
+                premiumAfterDiscount,
+                premiumAfterDiscountPlusLevy,
+                levyPerYear,
+                levyType,
+                usdHkdRate,
+                usdThbRate,
+                ...standardCalculation,
+                prepaidPremiumB,
+                prepaidLevyC,
+                totalPrepaidAmount,
+                grandPaymentAmount,
+                years
+            };
+
+            displayResults();
+            document.getElementById('resultsContainer').style.display = 'block';
+        }
+
+        function displayResults() {
+            const r = calculationResults;
+            const bahtExchangeRate = r.usdThbRate;
+            
+            // Standard Payment Display
+            const standardSubtitle = document.getElementById('standardSubtitle');
+            standardSubtitle.textContent = `${r.payOption}-year payment with Premium Discount`;
+            
+            const standardAmount = document.getElementById('standardAmount');
+            const standardDetails = document.getElementById('standardDetails');
+            
+            if (r.payOption === 2) {
+                // 2-Pay Standard Display
+                const year1Baht = r.year1Payment * bahtExchangeRate;
+                standardAmount.innerHTML = `${r.year1Payment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}<br><small style="font-size: 16px; color: #6c757d; font-weight: normal;">≈ ฿${year1Baht.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</small>`;
+                
+                standardDetails.innerHTML = `
+                    <div class="detail-row">
+                        <span class="detail-label">Levy Type:</span>
+                        <span class="detail-value" style="color: ${r.levyType === 'Manual' ? '#9c27b0' : '#28a745'};">${r.levyType} ${r.levyType === 'Manual' ? '✓' : '🔄'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Year 1 Payment:</span>
+                        <span class="detail-value">${r.year1Payment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Year 2 Payment:</span>
+                        <span class="detail-value">${r.year2Payment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Total Cost (2 years):</span>
+                        <span class="detail-value">${r.standardTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>
+                `;
+            } else {
+                // 5-Pay Standard Display
+                const yearlyBaht = r.yearlyPayment * bahtExchangeRate;
+                standardAmount.innerHTML = `${r.yearlyPayment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}<br><small style="font-size: 16px; color: #6c757d; font-weight: normal;">≈ ฿${yearlyBaht.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</small>`;
+                
+                standardDetails.innerHTML = `
+                    <div class="detail-row">
+                        <span class="detail-label">Levy Type:</span>
+                        <span class="detail-value" style="color: ${r.levyType === 'Manual' ? '#9c27b0' : '#28a745'};">${r.levyType} ${r.levyType === 'Manual' ? '✓' : '🔄'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Annual Payment:</span>
+                        <span class="detail-value">${r.yearlyPayment.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Total Cost (5 years):</span>
+                        <span class="detail-value">${r.standardTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>
+                `;
+            }
+
+            // Prepayment Display
+            const grandPaymentBaht = r.grandPaymentAmount * bahtExchangeRate;
+            document.getElementById('prepaymentAmount').innerHTML = `${r.grandPaymentAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}<br><small style="font-size: 16px; color: #6c757d; font-weight: normal;">≈ ฿${grandPaymentBaht.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</small>`;
+            
+            const prepaymentBreakdown = document.getElementById('prepaymentBreakdown');
+            prepaymentBreakdown.innerHTML = `
+                <div class="breakdown-row" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
+                    <span style="font-weight: 600; color: #17a2b8;">Levy Type:</span>
+                    <span style="font-weight: 600; color: ${r.levyType === 'Manual' ? '#9c27b0' : '#17a2b8'};">${r.levyType} ${r.levyType === 'Manual' ? '✓' : '🔄'}</span>
+                </div>
+                <div class="breakdown-row">
+                    <span>Total initial annual Premium:</span>
+                    <span>${r.totalInitialPremium.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>
+                <div class="breakdown-row">
+                    <span>Premium after discount (A):</span>
+                    <span>${r.premiumAfterDiscountPlusLevy.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>
+                <div class="breakdown-row">
+                    <span>Prepaid Premium (B):</span>
+                    <span>${r.prepaidPremiumB.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>
+                <div class="breakdown-row">
+                    <span>Prepaid insurance levy (C):</span>
+                    <span>${r.prepaidLevyC.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>
+                <div class="breakdown-row">
+                    <span>Total Prepaid Amount (B) + (C):</span>
+                    <span>${r.totalPrepaidAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>
+                <div class="breakdown-row total">
+                    <span>Grand Payment Amount (A+B+C):</span>
+                    <span>${r.grandPaymentAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>
+            `;
+        }
+
+        function calculateGoalSeek() {
+            const targetAmount = parseFloat(document.getElementById('targetAmount').value) || 0;
+            const payOption = getPaymentOption();
+            const minPremium = payOption === 2 ? 4610 : 1977;
+            
+            if (targetAmount < 1000) {
+                alert('กรุณาป้อนจำนวนเป้าหมายอย่างน้อย $1,000');
+                return;
+            }
+            
+            // Binary search for required premium
+            let low = minPremium;
+            let high = targetAmount * 3;
+            let requiredPremium = 0;
+            const tolerance = 1;
+            const maxIterations = 200;
+            let iterations = 0;
+            let bestMatch = { premium: 0, difference: Infinity };
+            
+            while (iterations < maxIterations && Math.abs(high - low) > tolerance) {
+                const mid = (low + high) / 2;
+                
+                // Calculate total with this premium
+                let total = 0;
+                const midLevy = calculateLevy(mid);
+                
+                if (payOption === 2) {
+                    const firstYear = mid * (1 - PREMIUM_DISCOUNT_RATE) + midLevy;
+                    const prepaidPremium = mid / (1 + PREPAYMENT_INTEREST_RATE);
+                    const prepaidLevy = midLevy / (1 + PREPAYMENT_INTEREST_RATE);
+                    total = firstYear + prepaidPremium + prepaidLevy;
+                } else {
+                    const discountedPremium = mid * (1 - PREMIUM_DISCOUNT_RATE);
+                    const firstYear = discountedPremium + midLevy;
+                    
+                    const prepaidPremium = goalSeekFor5Pay(discountedPremium, discountedPremium, PREPAYMENT_INTEREST_RATE, 5);
+                    const prepaidLevy = goalSeekFor5Pay(midLevy, midLevy, PREPAYMENT_INTEREST_RATE, 5);
+                    total = firstYear + prepaidPremium + prepaidLevy;
+                }
+                
+                // Track best match
+                const difference = Math.abs(total - targetAmount);
+                if (difference < bestMatch.difference) {
+                    bestMatch = { premium: mid, difference: difference };
+                }
+                
+                if (Math.abs(total - targetAmount) < tolerance) {
+                    requiredPremium = mid;
+                    break;
+                }
+                
+                if (total < targetAmount) {
+                    low = mid;
+                } else {
+                    high = mid;
+                }
+                
+                iterations++;
+            }
+            
+            // Use best match if no exact solution found
+            if (requiredPremium === 0) {
+                requiredPremium = bestMatch.premium;
+            }
+            
+            // Check if result meets minimum premium
+            if (requiredPremium < minPremium) {
+                alert(`จำนวนเป้าหมายต่ำเกินไป! เบี้ยประกันขั้นต่ำสำหรับ ${payOption}-Pay คือ $${minPremium.toLocaleString()}`);
+                requiredPremium = minPremium;
+            }
+            
+            // Display result
+            document.getElementById('requiredPremium').textContent = `$${requiredPremium.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('goalSeekPayOption').textContent = `${payOption}-Pay`;
+            document.getElementById('goalSeekTarget').textContent = `$${targetAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            document.getElementById('goalSeekResult').style.display = 'block';
+        }
+
+        function showFullPaymentAnalysis() {
+            const modal = document.getElementById('fullAnalysisModal');
+            const content = document.getElementById('analysisContent');
+            
+            if (!calculationResults.payOption) {
+                alert('Please calculate premium first');
+                return;
+            }
+            
+            const r = calculationResults;
+            
+            let html = `
+                <div class="payment-schedule">
+                    <h4>Policy Configuration</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Payment Option:</span>
+                        <span class="detail-value">${r.payOption}-Pay</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Annual Premium:</span>
+                        <span class="detail-value">$${r.annualPremium.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Insurance Levy (${r.levyType}):</span>
+                        <span class="detail-value" style="color: ${r.levyType === 'Manual' ? '#9c27b0' : '#17a2b8'};">$${r.levyPerYear.toLocaleString('en-US', {minimumFractionDigits: 2})} ${r.levyType === 'Manual' ? '✓' : '🔄'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Premium Discount:</span>
+                        <span class="detail-value">10%</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Prepayment Interest:</span>
+                        <span class="detail-value">4%</span>
+                    </div>
+                </div>
+                
+                <div class="payment-schedule" style="margin-top: 20px;">
+                    <h4>Payment Comparison</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Standard Total:</span>
+                        <span class="detail-value">$${r.standardTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Prepayment Total:</span>
+                        <span class="detail-value">$${r.grandPaymentAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                    </div>
+                    <div class="detail-row" style="font-weight: 600; color: #28a745;">
+                        <span class="detail-label">Total Savings:</span>
+                        <span class="detail-value">$${(r.standardTotal - r.grandPaymentAmount).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+            modal.classList.add('show');
+        }
+
+        function closeFullAnalysisModal() {
+            document.getElementById('fullAnalysisModal').classList.remove('show');
+        }
+
+        function reloadPage() {
+            window.location.reload();
+        }
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(function(registration) {
+                console.log('Service Worker registered:', registration);
+                
+                // Check for updates
+                registration.addEventListener('updatefound', function() {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', function() {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New version available
+                            document.getElementById('updateBanner').classList.add('show');
+                        }
+                    });
+                });
+            }).catch(function(error) {
+                console.log('Service Worker registration failed:', error);
+            });
+        }
+    </script>
+</body>
+</html>
