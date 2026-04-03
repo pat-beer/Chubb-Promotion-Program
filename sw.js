@@ -1,113 +1,46 @@
-// Service Worker for Chubb Life Calculator PWA
-// Version: 2.0.0
-// Last Updated: 2025-10-02 14:30:00
+/* ══════════════════════════════════════════════════════════
+   Chubb Life Calculator — Service Worker
+   Version: 4.0 | Updated: 2026-04-03
+══════════════════════════════════════════════════════════ */
 
-// IMPORTANT: เปลี่ยน CACHE_VERSION ทุกครั้งที่ update ไฟล์
-const CACHE_VERSION = 'chubb-calc-v2.0.0-20251002-1430';
-const CACHE_NAME = CACHE_VERSION;
-
-// ไฟล์ที่จะ cache
-const urlsToCache = [
+const CACHE_NAME  = 'chubb-calc-v4.0';
+const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
 ];
 
-// Install Event - Cache files
-self.addEventListener('install', function(event) {
-  console.log('[SW] Installing Service Worker...', CACHE_VERSION);
-  
+/* ── Install: cache core assets ── */
+self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        console.log('[SW] Caching app shell');
-        return cache.addAll(urlsToCache);
-      })
-      .then(function() {
-        // Force the waiting service worker to become the active service worker
-        return self.skipWaiting();
-      })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
 });
 
-// Activate Event - Clean up old caches
-self.addEventListener('activate', function(event) {
-  console.log('[SW] Activating Service Worker...', CACHE_VERSION);
-  
+/* ── Activate: remove old caches ── */
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(function() {
-      // Take control of all pages immediately
-      return self.clients.claim();
-    })
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
-// Fetch Event - Serve from cache, fallback to network
-self.addEventListener('fetch', function(event) {
+/* ── Fetch: Network-first, fallback to cache ── */
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
-        // Cache hit - return response from cache
-        if (response) {
-          console.log('[SW] Serving from cache:', event.request.url);
-          return response;
-        }
-
-        // Clone the request
-        const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest).then(function(response) {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          // Cache the new response
-          caches.open(CACHE_NAME)
-            .then(function(cache) {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
-        }).catch(function(error) {
-          console.log('[SW] Fetch failed:', error);
-          // You can return a custom offline page here
-          return caches.match('./index.html');
-        });
+    fetch(event.request)
+      .then(response => {
+        // Clone and cache fresh response
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        return response;
       })
+      .catch(() => caches.match(event.request))
   );
 });
-
-// Listen for messages from the client
-self.addEventListener('message', function(event) {
-  if (event.data.action === 'skipWaiting') {
-    self.skipWaiting();
-  }
-});
-
-// Periodic sync for checking updates (optional)
-self.addEventListener('sync', function(event) {
-  if (event.tag === 'check-update') {
-    event.waitUntil(checkForUpdates());
-  }
-});
-
-function checkForUpdates() {
-  return self.registration.update();
-}
-
-console.log('[SW] Service Worker loaded:', CACHE_VERSION);
