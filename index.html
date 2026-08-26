@@ -1,1111 +1,939 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1e3c72">
-    <meta name="description" content="Chubb Life Insurance Premium Calculator – My Legacy Plan V Blossom">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Chubb Calc">
-    <title>Chubb Life Calculator – My Legacy Plan V Blossom</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <style>
-/* ══════════════════════════════════════════════════════════
-   RESET & BASE
-══════════════════════════════════════════════════════════ */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 10px;
-}
-
-/* ── Update Banner ── */
-.update-banner {
-    position: fixed; top:0; left:0; right:0;
-    background: #28a745; color: white;
-    padding: 14px; text-align: center;
-    z-index: 9999; display: none;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-    animation: slideDown 0.3s ease;
-}
-.update-banner.show { display: block; }
-@keyframes slideDown { from{transform:translateY(-100%)} to{transform:translateY(0)} }
-.update-banner button {
-    background:white; color:#28a745; border:none;
-    padding:6px 18px; margin-left:12px;
-    border-radius:4px; font-weight:600; cursor:pointer;
-}
-
-/* ── Layout ── */
-.container {
-    max-width: 500px; margin: 0 auto;
-    background: #fff; border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    overflow: hidden;
-}
-
-/* ── Header ── */
-.header {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    color: white; padding: 26px 20px 20px; text-align: center;
-}
-.header h1 { font-size: 22px; font-weight: 700; margin-bottom: 5px; }
-.header p  { font-size: 14px; opacity: 0.9; }
-.header-meta {
-    display: flex; justify-content: center; gap: 10px;
-    margin-top: 10px; flex-wrap: wrap;
-}
-.tag {
-    background: rgba(255,255,255,0.15);
-    border-radius: 20px; padding: 3px 12px;
-    font-size: 11px; opacity: 0.85; letter-spacing: 0.3px;
-}
-.tag.updated { background: rgba(40,167,69,0.6); }
-
-/* ── Promo Banner ── */
-.promo-banner {
-    padding: 11px 20px; text-align: center;
-    font-size: 13px; font-weight: 600;
-    border-bottom: 1px solid #e9ecef;
-}
-.promo-active   { background: #d4edda; color: #155724; }
-.promo-inactive { background: #f8d7da; color: #721c24; }
-.promo-period   { font-size: 11px; font-weight: 400; margin-top: 3px; opacity: 0.8; }
-
-/* ── Changelog strip ── */
-.changelog {
-    background: #fff8e1; border-bottom: 1px solid #ffe082;
-    padding: 8px 16px; font-size: 11px; color: #5d4037;
-    line-height: 1.5;
-}
-.changelog strong { color: #e65100; }
-
-/* ── Form ── */
-.form-body { padding: 20px; }
-
-.input-group { margin-bottom: 20px; }
-.input-group > label {
-    display: block; font-size: 14px; font-weight: 600;
-    color: #333; margin-bottom: 8px;
-}
-
-/* ── Radio Option ── */
-.radio-row { display: flex; gap: 12px; }
-.radio-opt { flex: 1; position: relative; }
-.radio-opt input[type="radio"] {
-    position: absolute; opacity: 0;
-    width:100%; height:100%; cursor:pointer; z-index:1;
-}
-.radio-opt label {
-    display: block; padding: 14px;
-    background: #f8f9fa; border: 2px solid #e0e0e0;
-    border-radius: 12px; text-align: center;
-    font-size: 15px; font-weight: 600; cursor: pointer;
-    transition: all 0.25s;
-}
-.radio-opt input[type="radio"]:checked + label {
-    background: #e3f2fd; border-color: #2a5298; color: #2a5298;
-}
-
-/* ── Rate Grid ── */
-.rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-.rate-item label { display:block; font-size:12px; color:#666; font-weight:500; margin-bottom:4px; }
-.rate-note {
-    background: #e8f4fd; padding: 8px 12px;
-    border-radius: 8px; font-size: 11px;
-    color: #004085; line-height: 1.5;
-}
-
-/* ── Levy Section ── */
-.levy-section {
-    background: #f8f9fa; border: 2px dashed #dee2e6;
-    border-radius: 12px; padding: 14px; transition: all 0.3s;
-}
-.levy-section.active { background: #e3f2fd; border: 2px solid #2a5298; }
-.levy-toggle { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-.levy-toggle input[type="checkbox"] { width:18px; height:18px; accent-color:#2a5298; cursor:pointer; }
-.levy-toggle label { font-size:14px; font-weight:600; color:#1e3c72; cursor:pointer; margin:0; }
-.levy-hint {
-    background:#fff3cd; border:1px solid #ffeaa7;
-    border-radius:6px; padding:8px 10px;
-    font-size:11px; color:#856404; line-height:1.5; margin-top:8px;
-}
-
-/* ── Info Boxes ── */
-.conditions-box {
-    background: #fff3cd; border: 1px solid #ffeaa7;
-    border-radius: 10px; padding: 13px; margin: 14px 0;
-    font-size: 12px; color: #856404; line-height: 1.5;
-}
-.conditions-box h4 { font-size:13px; margin-bottom:7px; }
-.conditions-box ul  { padding-left:16px; }
-.conditions-box li  { margin-bottom:3px; }
-
-/* ── Promo Details Table ── */
-.promo-details-box {
-    background: linear-gradient(135deg,#e8f4fd,#f0f8ff);
-    border: 1px solid #b8daff; border-radius: 10px;
-    padding: 13px; margin: 14px 0;
-    font-size: 12px; color: #004085; line-height: 1.5;
-}
-.promo-details-box h4 { font-size:13px; margin-bottom:10px; color:#1e3c72; }
-.promo-table { width:100%; border-collapse:collapse; font-size:11px; }
-.promo-table th, .promo-table td {
-    border:1px solid #b8daff; padding:6px 8px; text-align:center;
-}
-.promo-table th { background:#1e3c72; color:white; font-weight:600; }
-.promo-table td:first-child { text-align:left; font-weight:600; color:#1e3c72; }
-.hi-red  { color:#c82333; font-weight:700; }
-.hi-blue { color:#0047ab; font-weight:700; }
-.badge-new {
-    display:inline-block; background:#dc3545; color:white;
-    font-size:9px; padding:1px 5px; border-radius:3px;
-    vertical-align:middle; margin-left:4px; font-weight:700;
-}
-
-/* ── Input Field ── */
-.input-wrap { position: relative; }
-.input-prefix {
-    position:absolute; left:14px; top:50%;
-    transform:translateY(-50%);
-    font-size:15px; color:#888; font-weight:600; pointer-events:none;
-}
-.input-field {
-    width:100%; padding:13px 14px; border:2px solid #e0e0e0;
-    border-radius:12px; font-size:15px; transition:border-color 0.25s;
-}
-.input-field.pl { padding-left:34px; }
-.input-field:focus { outline:none; border-color:#2a5298; box-shadow:0 0 0 3px rgba(42,82,152,0.1); }
-.field-error { color:#dc3545; font-size:12px; margin-top:5px; display:none; }
-
-/* ── Calc Button ── */
-.calc-btn {
-    width:100%;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    color:white; border:none; padding:16px;
-    font-size:17px; font-weight:600; border-radius:12px;
-    cursor:pointer; transition:transform 0.2s,box-shadow 0.2s;
-    display:flex; align-items:center; justify-content:center; gap:10px;
-}
-.calc-btn:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(42,82,152,0.3); }
-.calc-btn:active { transform:translateY(0); }
-.spinner {
-    width:18px; height:18px;
-    border:2px solid rgba(255,255,255,0.4);
-    border-top:2px solid white;
-    border-radius:50%; animation:spin 0.8s linear infinite; display:none;
-}
-@keyframes spin { to{transform:rotate(360deg)} }
-
-/* ── Results ── */
-.results-area { display:none; margin-top:26px; }
-
-.result-card {
-    background:#f8f9fa; border:2px solid #e9ecef;
-    border-radius:15px; padding:18px; margin-bottom:18px;
-    position:relative; overflow:hidden;
-}
-.result-card::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:4px;
-    background:linear-gradient(90deg,#28a745,#20c997);
-}
-.result-card.prepay::before { background:linear-gradient(90deg,#17a2b8,#138496); }
-.result-card h3 { font-size:16px; font-weight:700; color:#1e3c72; margin-bottom:4px; }
-.result-card .subtitle { font-size:12px; color:#6c757d; margin-bottom:12px; }
-.result-amount { font-size:26px; font-weight:700; color:#1e3c72; margin:12px 0; line-height:1.3; }
-.result-amount small { font-size:13px; color:#6c757d; font-weight:400; display:block; }
-
-/* ── Detail rows ── */
-.detail-box { background:white; border-radius:10px; padding:12px; margin-top:12px; }
-.d-row {
-    display:flex; justify-content:space-between; align-items:center;
-    padding:7px 0; border-bottom:1px solid #f0f0f0; font-size:13px;
-}
-.d-row:last-child { border-bottom:none; font-weight:600; color:#1e3c72; font-size:14px; }
-.d-label { color:#6c757d; flex:1; }
-.d-value { font-weight:600; color:#333; text-align:right; }
-
-/* ── Breakdown Box ── */
-.breakdown-box {
-    background:#f0f9ff; border-left:4px solid #17a2b8;
-    border-radius:8px; padding:10px 12px; margin:10px 0; font-size:12px;
-}
-.b-row { display:flex; justify-content:space-between; padding:4px 0; }
-.b-row.total {
-    border-top:1px solid #b8e0ec; margin-top:6px; padding-top:8px;
-    font-weight:700; color:#1e3c72; font-size:13px;
-}
-.info-pill {
-    background:#e8f4fd; border:1px solid #b8daff;
-    border-radius:6px; padding:7px 10px;
-    font-size:11px; color:#004085; margin:8px 0;
-}
-
-/* ── Action Buttons ── */
-.btn-action {
-    width:100%; border:none; padding:14px;
-    font-size:15px; font-weight:600; border-radius:12px;
-    cursor:pointer; margin-top:8px; transition:all 0.3s;
-}
-.btn-analysis { background:#17a2b8; color:white; }
-.btn-analysis:hover { background:#138496; }
-.btn-extra {
-    background:linear-gradient(135deg,#dc3545,#a71e2a); color:white;
-    margin-top:12px;
-}
-.btn-extra:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(220,53,69,0.3); }
-.btn-extra small { display:block; font-size:11px; opacity:0.85; margin-top:4px; }
-
-/* ── Goal Seek Section ── */
-.goal-section {
-    margin-top:22px;
-    background:linear-gradient(135deg,rgba(156,39,176,0.07),rgba(123,31,162,0.07));
-    border:2px solid #9c27b0; border-radius:15px; padding:18px;
-}
-.goal-section h3 { color:#9c27b0; font-size:17px; margin-bottom:6px; }
-.goal-section p  { font-size:12px; color:#666; margin-bottom:14px; }
-.btn-goal {
-    width:100%;
-    background:linear-gradient(135deg,#9c27b0,#7b1fa2);
-    color:white; border:none; padding:13px;
-    font-size:15px; font-weight:600; border-radius:12px; cursor:pointer;
-}
-.btn-goal:hover { opacity:0.9; }
-.goal-result {
-    margin-top:14px; background:white;
-    border-radius:12px; padding:14px; display:none; text-align:center;
-}
-.goal-amount { font-size:26px; font-weight:700; color:#9c27b0; margin:6px 0; }
-
-/* ── Modal ── */
-.modal-overlay {
-    display:none; position:fixed; inset:0;
-    background:rgba(0,0,0,0.55); backdrop-filter:blur(5px);
-    z-index:1000; justify-content:center; align-items:center;
-}
-.modal-overlay.show { display:flex; }
-.modal-box {
-    background:white; border-radius:20px;
-    width:92%; max-width:480px;
-    max-height:88vh; overflow-y:auto;
-    box-shadow:0 25px 50px rgba(0,0,0,0.25);
-}
-.modal-head {
-    background:linear-gradient(135deg,#1e3c72,#2a5298);
-    color:white; padding:18px 20px;
-    border-radius:20px 20px 0 0;
-    display:flex; align-items:center; justify-content:space-between;
-}
-.modal-head.red { background:linear-gradient(135deg,#dc3545,#a71e2a); }
-.modal-head h2 { font-size:18px; }
-.modal-head p  { font-size:12px; opacity:0.8; margin-top:3px; }
-.modal-close {
-    background:rgba(255,255,255,0.15); border:none; color:white;
-    width:32px; height:32px; border-radius:50%; font-size:20px;
-    cursor:pointer; display:flex; align-items:center; justify-content:center;
-    transition:background 0.2s; flex-shrink:0;
-}
-.modal-close:hover { background:rgba(255,255,255,0.3); }
-.modal-body { padding:20px; }
-
-/* ── Comparison Cards ── */
-.cmp-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
-.cmp-card {
-    background:#f8f9fa; border:2px solid #e9ecef;
-    border-radius:12px; padding:14px;
-}
-.cmp-card h4 { font-size:12px; color:#1e3c72; margin-bottom:8px; font-weight:700; }
-.cmp-amount { font-size:18px; font-weight:700; color:#1e3c72; margin:6px 0; }
-.savings-box {
-    background:linear-gradient(135deg,#28a745,#20c997);
-    color:white; border-radius:12px; padding:14px; text-align:center; margin-top:10px;
-}
-.savings-box .sav-amt { font-size:24px; font-weight:700; margin:5px 0; }
-
-/* ── Schedule Table ── */
-.schedule-table { width:100%; border-collapse:collapse; font-size:11px; margin-top:8px; }
-.schedule-table th {
-    background:#1e3c72; color:white;
-    padding:7px 5px; text-align:center; font-size:10px;
-}
-.schedule-table td { padding:6px 5px; text-align:center; border-bottom:1px solid #f0f0f0; }
-.schedule-table tr:nth-child(even) td { background:#f8f9fa; }
-.schedule-table tr:last-child td { font-weight:600; color:#1e3c72; }
-
-/* ── Footer ── */
-.footer {
-    background:#f8f9fa; padding:18px 20px;
-    font-size:11px; color:#6c757d; text-align:center; line-height:1.6;
-}
-.rider-note {
-    background:#fff3cd; border:1px solid #ffeaa7;
-    border-radius:8px; padding:12px; margin-top:14px;
-    text-align:left; font-size:11px; color:#856404; line-height:1.6;
-}
-.rider-note a { color:#2a5298; }
-
-/* ── Responsive ── */
-@media (max-width:480px) {
-    .container { border-radius:0; min-height:100vh; }
-    .cmp-grid   { grid-template-columns:1fr; }
-}
-    </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#1e3c72">
+<meta name="description" content="Chubb Life Premium Calculator – MyLegacy Plan V (Blossom & Harvest)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chubb Calc">
+<title>Chubb Life Calculator – My Legacy Plan V</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:10px}
+.update-banner{position:fixed;top:0;left:0;right:0;background:#28a745;color:white;padding:13px;text-align:center;z-index:9999;display:none}
+.update-banner.show{display:block}
+.update-banner button{background:white;color:#28a745;border:none;padding:5px 16px;margin-left:10px;border-radius:4px;font-weight:600;cursor:pointer}
+.container{max-width:500px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden}
+/* Header */
+.header{background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);color:white;padding:24px 20px 18px;text-align:center;transition:background .3s}
+.header.harvest-hdr{background:linear-gradient(135deg,#78350f 0%,#b45309 100%)}
+.header h1{font-size:22px;font-weight:700;margin-bottom:5px}
+.header p{font-size:13px;opacity:.9}
+.header-meta{display:flex;justify-content:center;gap:8px;margin-top:9px;flex-wrap:wrap}
+.tag{background:rgba(255,255,255,.15);border-radius:20px;padding:3px 11px;font-size:10px;opacity:.85}
+.tag.green{background:rgba(40,167,69,.6)}
+.tag.orange{background:rgba(255,140,0,.6)}
+/* Promo */
+.promo-banner{padding:10px 20px;text-align:center;font-size:12px;font-weight:600;border-bottom:1px solid #e9ecef}
+.promo-active{background:#d4edda;color:#155724}
+.promo-inactive{background:#f8d7da;color:#721c24}
+.promo-period{font-size:11px;font-weight:400;margin-top:2px;opacity:.8}
+.changelog{background:#fff8e1;border-bottom:2px solid #ffe082;padding:8px 16px;font-size:11px;color:#5d4037;line-height:1.5}
+.changelog strong{color:#e65100}
+/* Form */
+.form-body{padding:18px 20px}
+.input-group{margin-bottom:18px}
+.input-group>label{display:block;font-size:13px;font-weight:600;color:#333;margin-bottom:7px}
+/* Product selector */
+.prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.prod-opt{position:relative}
+.prod-opt input[type=radio]{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;z-index:1}
+.prod-opt label{display:block;padding:13px 10px;background:#f8f9fa;border:2px solid #e0e0e0;border-radius:11px;text-align:center;cursor:pointer;transition:all .25s}
+.prod-opt label strong{display:block;font-size:14px;font-weight:700;margin-bottom:3px}
+.prod-opt label small{font-size:10px;color:#6c757d;line-height:1.4}
+.prod-opt input:checked+label.blossom-lbl{background:#e3f2fd;border-color:#1e3c72;color:#1e3c72}
+.prod-opt input:checked+label.blossom-lbl small{color:#2a5298}
+.prod-opt input:checked+label.harvest-lbl{background:#fef3c7;border-color:#b45309;color:#7c2d12}
+.prod-opt input:checked+label.harvest-lbl small{color:#92400e}
+.product-note{margin-top:9px;border-radius:8px;padding:9px 12px;font-size:11px;line-height:1.5}
+.product-note.blossom{background:#e3f2fd;border:1px solid #90caf9;color:#1e3c72}
+.product-note.harvest{background:#fef3c7;border:1px solid #fbbf24;color:#7c2d12}
+/* Radio rows */
+.radio-row{display:flex;gap:12px}
+.radio-opt{flex:1;position:relative}
+.radio-opt input[type=radio]{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;z-index:1}
+.radio-opt label{display:block;padding:12px 8px;background:#f8f9fa;border:2px solid #e0e0e0;border-radius:11px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;transition:all .25s}
+.radio-opt input[type=radio]:checked+label{background:#e3f2fd;border-color:#2a5298;color:#2a5298}
+.rider-radio .radio-opt input[type=radio]:checked+label.yes{background:#fce4ec;border-color:#c62828;color:#c62828}
+.harvest-pay-fixed{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;background:#fef3c7;border:2px solid #b45309;border-radius:11px;font-size:14px;font-weight:700;color:#7c2d12}
+.rider-notice{background:#fce4ec;border:1px solid #ef9a9a;border-radius:9px;padding:9px 12px;font-size:11px;color:#b71c1c;margin-top:9px;display:none;line-height:1.5}
+.rider-notice.show{display:block}
+/* Rates */
+.rate-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.rate-item label{display:block;font-size:11px;color:#666;font-weight:500;margin-bottom:4px}
+.rate-note{background:#e8f4fd;padding:7px 11px;border-radius:8px;font-size:11px;color:#004085;line-height:1.5}
+/* Levy */
+.levy-section{background:#f8f9fa;border:2px dashed #dee2e6;border-radius:11px;padding:13px;transition:all .3s}
+.levy-section.active{background:#e3f2fd;border:2px solid #2a5298}
+.levy-toggle{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.levy-toggle input[type=checkbox]{width:17px;height:17px;accent-color:#2a5298;cursor:pointer}
+.levy-toggle label{font-size:13px;font-weight:600;color:#1e3c72;cursor:pointer;margin:0}
+.levy-hint{background:#fff3cd;border:1px solid #ffeaa7;border-radius:6px;padding:7px 9px;font-size:11px;color:#856404;line-height:1.5;margin-top:7px}
+/* Info boxes */
+.cond-box{background:#fff3cd;border:1px solid #ffeaa7;border-radius:9px;padding:12px;margin:12px 0;font-size:11px;color:#856404;line-height:1.6}
+.cond-box.harvest{background:#fef9e7;border-color:#f59e0b}
+.cond-box h4{font-size:12px;margin-bottom:6px}
+.cond-box ul{padding-left:15px}
+.cond-box li{margin-bottom:2px}
+.promo-box{background:linear-gradient(135deg,#e8f4fd,#f0f8ff);border:1px solid #b8daff;border-radius:9px;padding:12px;margin:12px 0}
+.promo-box.harvest{background:linear-gradient(135deg,#fffbeb,#fef9e7);border-color:#fbbf24}
+.promo-box h4{font-size:12px;margin-bottom:8px;color:#1e3c72;font-weight:700}
+.promo-box.harvest h4{color:#7c2d12}
+.ptable{width:100%;border-collapse:collapse;font-size:10px}
+.ptable th,.ptable td{border:1px solid #b8daff;padding:5px 7px;text-align:center}
+.ptable th{background:#1e3c72;color:white;font-weight:600}
+.ptable.ht th{background:#92400e}
+.ptable td:first-child{text-align:left;font-weight:600;color:#1e3c72}
+.ptable.ht td:first-child{color:#7c2d12}
+.hi-r{color:#c82333;font-weight:700}
+.hi-b{color:#0047ab;font-weight:700}
+.hi-g{color:#155724;font-weight:700}
+.badge-new{display:inline-block;background:#dc3545;color:white;font-size:9px;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:4px}
+.badge-gtd{display:inline-block;background:#065f46;color:white;font-size:9px;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:4px}
+/* Input */
+.input-wrap{position:relative}
+.input-prefix{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;color:#888;font-weight:600;pointer-events:none}
+.input-field{width:100%;padding:12px 13px;border:2px solid #e0e0e0;border-radius:11px;font-size:14px;transition:border-color .25s}
+.input-field.pl{padding-left:32px}
+.input-field:focus{outline:none;border-color:#2a5298;box-shadow:0 0 0 3px rgba(42,82,152,.1)}
+.field-error{color:#dc3545;font-size:11px;margin-top:4px;display:none}
+/* Calc button */
+.calc-btn{width:100%;background:linear-gradient(135deg,#1e3c72,#2a5298);color:white;border:none;padding:14px;font-size:16px;font-weight:600;border-radius:11px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:9px}
+.calc-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(42,82,152,.3)}
+.calc-btn.harvest-btn{background:linear-gradient(135deg,#78350f,#b45309)}
+.calc-btn.harvest-btn:hover{box-shadow:0 8px 25px rgba(120,53,15,.3)}
+.spinner{width:17px;height:17px;border:2px solid rgba(255,255,255,.4);border-top:2px solid white;border-radius:50%;animation:spin .8s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Results */
+.results-area{display:none;margin-top:24px}
+.result-card{background:#f8f9fa;border:2px solid #e9ecef;border-radius:14px;padding:16px;margin-bottom:16px;position:relative;overflow:hidden}
+.result-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#28a745,#20c997)}
+.result-card.prep-card::before{background:linear-gradient(90deg,#17a2b8,#138496)}
+.result-card.harvest-card::before{background:linear-gradient(90deg,#d97706,#f59e0b)}
+.result-card.harvest-prep::before{background:linear-gradient(90deg,#15803d,#22c55e)}
+.result-card h3{font-size:15px;font-weight:700;color:#1e3c72;margin-bottom:3px}
+.result-card h3.harvest-h{color:#7c2d12}
+.result-card .subtitle{font-size:11px;color:#6c757d;margin-bottom:10px}
+.result-amount{font-size:24px;font-weight:700;color:#1e3c72;margin:10px 0;line-height:1.3}
+.result-amount.harvest-amt{color:#7c2d12}
+.result-amount small{font-size:12px;color:#6c757d;font-weight:400;display:block}
+.detail-box{background:white;border-radius:9px;padding:11px;margin-top:10px}
+.d-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:12px}
+.d-row:last-child{border-bottom:none;font-weight:600;color:#1e3c72;font-size:13px}
+.d-label{color:#6c757d;flex:1;padding-right:8px}
+.d-value{font-weight:600;color:#333;text-align:right}
+.bdown{background:#f0f9ff;border-left:4px solid #17a2b8;border-radius:7px;padding:9px 11px;margin:8px 0;font-size:11px}
+.bdown.harvest{background:#fffbeb;border-left-color:#d97706}
+.b-row{display:flex;justify-content:space-between;padding:3px 0}
+.b-row.total{border-top:1px solid #b8e0ec;margin-top:5px;padding-top:7px;font-weight:700;color:#1e3c72;font-size:12px}
+.bdown.harvest .b-row.total{border-top-color:#fcd34d;color:#7c2d12}
+.info-pill{background:#e8f4fd;border:1px solid #b8daff;border-radius:5px;padding:6px 9px;font-size:10px;color:#004085;margin:7px 0}
+.gtd-pill{background:#d1fae5;border:1px solid #6ee7b7;border-radius:5px;padding:5px 9px;font-size:10px;color:#065f46;font-weight:700;margin:7px 0}
+.sbadge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;margin-left:5px;vertical-align:middle}
+.sbadge.nr{background:#dbeafe;color:#1d4ed8}
+.sbadge.wr{background:#fce7f3;color:#be185d}
+.sbadge.hv{background:#fef3c7;color:#7c2d12}
+.btn-act{width:100%;border:none;padding:12px;font-size:13px;font-weight:600;border-radius:11px;cursor:pointer;margin-top:8px;transition:all .3s}
+.btn-analysis{background:#17a2b8;color:white}
+.btn-analysis:hover{background:#138496}
+.btn-extra{background:linear-gradient(135deg,#dc3545,#a71e2a);color:white;margin-top:12px;display:flex;flex-direction:column;align-items:center}
+.btn-extra small{font-size:11px;opacity:.85;margin-top:3px}
+.btn-extra:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(220,53,69,.3)}
+/* Goal Seek */
+.goal-section{margin-top:20px;background:rgba(156,39,176,.07);border:2px solid #9c27b0;border-radius:14px;padding:16px}
+.goal-section.harvest-gs{border-color:#d97706;background:rgba(217,119,6,.07)}
+.goal-section h3{color:#9c27b0;font-size:16px;margin-bottom:5px}
+.goal-section.harvest-gs h3{color:#d97706}
+.goal-section p{font-size:11px;color:#666;margin-bottom:12px}
+.btn-goal{width:100%;background:linear-gradient(135deg,#9c27b0,#7b1fa2);color:white;border:none;padding:12px;font-size:14px;font-weight:600;border-radius:11px;cursor:pointer}
+.goal-section.harvest-gs .btn-goal{background:linear-gradient(135deg,#d97706,#b45309)}
+.btn-goal:hover{opacity:.9}
+.goal-result{margin-top:13px;background:white;border-radius:11px;padding:13px;display:none;text-align:center}
+.goal-amount{font-size:24px;font-weight:700;color:#9c27b0;margin:5px 0}
+.goal-section.harvest-gs .goal-amount{color:#d97706}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(5px);z-index:1000;justify-content:center;align-items:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:white;border-radius:18px;width:92%;max-width:490px;max-height:88vh;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,.25)}
+.modal-head{background:linear-gradient(135deg,#1e3c72,#2a5298);color:white;padding:16px 18px;border-radius:18px 18px 0 0;display:flex;align-items:flex-start;justify-content:space-between}
+.modal-head.red{background:linear-gradient(135deg,#dc3545,#a71e2a)}
+.modal-head.harvest{background:linear-gradient(135deg,#78350f,#b45309)}
+.modal-head h2{font-size:16px}.modal-head p{font-size:11px;opacity:.8;margin-top:2px}
+.modal-close{background:rgba(255,255,255,.15);border:none;color:white;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:8px}
+.modal-close:hover{background:rgba(255,255,255,.3)}
+.modal-body{padding:18px}
+.msec{font-size:12px;font-weight:700;color:#1e3c72;margin:12px 0 7px;padding-bottom:4px;border-bottom:2px solid #e9ecef}
+.cmp2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.cc{background:#f8f9fa;border:2px solid #e9ecef;border-radius:9px;padding:10px}
+.cc.rd{border-color:#ef9a9a;background:#fff5f5}
+.cc h5{font-size:10px;font-weight:700;margin-bottom:5px}
+.cc h5.red{color:#c62828}
+.ccamp{font-size:15px;font-weight:700;color:#1e3c72;margin:3px 0}
+.ccamp.red{color:#c62828}
+.ccsub{font-size:10px;color:#6c757d;margin-top:2px}
+.sstrip{background:linear-gradient(135deg,#28a745,#20c997);color:white;border-radius:9px;padding:10px;text-align:center;margin-top:7px}
+.sstrip .sa{font-size:20px;font-weight:800;margin:4px 0}
+.sstrip .ss{font-size:10px;opacity:.9}
+/* Footer */
+.footer{background:#f8f9fa;padding:16px 18px;font-size:11px;color:#6c757d;text-align:center;line-height:1.6}
+.rider-note{background:#fff3cd;border:1px solid #ffeaa7;border-radius:8px;padding:11px;margin-top:12px;text-align:left;font-size:11px;color:#856404;line-height:1.6}
+.rider-note a{color:#2a5298}
+@media(max-width:480px){.container{border-radius:0;min-height:100vh}.cmp2{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-
-<!-- Update Notification -->
 <div id="updateBanner" class="update-banner">
-    🎉 New version available!
-    <button onclick="location.reload(true)">Update Now</button>
+    🎉 New version! <button onclick="location.reload(true)">Update Now</button>
 </div>
-
 <div class="container">
 
-    <!-- ── Header ── -->
-    <div class="header">
-        <h1>Chubb Life Calculator</h1>
-        <p>My Legacy Plan V – Blossom</p>
-        <div class="header-meta">
-            <span class="tag">v5.0</span>
-            <span class="tag updated">Updated: 13 Jul 2026</span>
-            <span class="tag">Q3 2026 Promotion</span>
+<!-- HEADER -->
+<div class="header" id="mainHeader">
+    <h1>Chubb Life Calculator</h1>
+    <p id="headerSub">My Legacy Plan V – Blossom / Harvest</p>
+    <div class="header-meta">
+        <span class="tag">v6.0</span>
+        <span class="tag green">13 Jul 2026</span>
+        <span class="tag orange">Q3 2026</span>
+    </div>
+</div>
+
+<!-- PROMO BANNER -->
+<div id="promoBanner" class="promo-banner">
+    <div id="promoStatus"></div>
+    <div class="promo-period" id="promoPeriod"></div>
+</div>
+
+<!-- CHANGELOG -->
+<div class="changelog">
+    <strong>📢 v6.0 · 13 Jul 2026:</strong>
+    เพิ่ม <strong>🌾 Harvest 3-Pay</strong> (ไม่มีส่วนลด · 4% GUARANTEED prepay) |
+    Blossom 2-Pay Y1 <strong>10%</strong> · Y2 prepay <strong>3.71%</strong> |
+    Rates: USD/THB <strong>33.38</strong>
+</div>
+
+<div class="form-body">
+
+<!-- PRODUCT SELECTION -->
+<div class="input-group">
+    <label>เลือกผลิตภัณฑ์ / Select Product</label>
+    <div class="prod-grid">
+        <div class="prod-opt">
+            <input type="radio" id="prodBlossom" name="product" value="blossom" checked>
+            <label for="prodBlossom" class="blossom-lbl">
+                <strong>🌸 Blossom</strong>
+                <small>2-Pay / 5-Pay<br>Long-term savings & legacy</small>
+            </label>
+        </div>
+        <div class="prod-opt">
+            <input type="radio" id="prodHarvest" name="product" value="harvest">
+            <label for="prodHarvest" class="harvest-lbl">
+                <strong>🌾 Harvest</strong>
+                <small>3-Pay only<br>Capital efficiency & liquidity</small>
+            </label>
         </div>
     </div>
-
-    <!-- ── Promotion Banner ── -->
-    <div id="promoBanner" class="promo-banner">
-        <div id="promoStatus"></div>
-        <div class="promo-period" id="promoPeriod"></div>
+    <div id="productNote" class="product-note blossom">
+        🌸 <strong>Blossom:</strong> Legacy &amp; long-term savings · 2-Pay / 5-Pay · Easy Shield Rider available · 10% discount Q3 2026
     </div>
+</div>
 
-    <!-- ── Changelog ── -->
-    <div class="changelog">
-        <strong>📢 Updated 13 Jul 2026 (Q3):</strong>
-        2-Pay Y1: <strong>12% → 10%</strong> |
-        2-Pay Y2 Prepay: <strong>3.71%</strong> (no rider) · <strong>5.63%</strong> (with rider) NEW |
-        Policy issue by <strong>31 Oct 2026</strong> |
-        Rates: USD/THB <strong>33.38</strong> · HKD/THB <strong>4.26</strong>
+<!-- PAYMENT OPTION -->
+<div class="input-group">
+    <label>Payment Option</label>
+    <div class="radio-row" id="blossomPayOpts">
+        <div class="radio-opt">
+            <input type="radio" id="pay2" name="payOpt" value="2" checked>
+            <label for="pay2">2-Pay</label>
+        </div>
+        <div class="radio-opt">
+            <input type="radio" id="pay5" name="payOpt" value="5">
+            <label for="pay5">5-Pay</label>
+        </div>
     </div>
-
-    <!-- ── Form ── -->
-    <div class="form-body">
-
-        <!-- Payment Option -->
-        <div class="input-group">
-            <label>Payment Option</label>
-            <div class="radio-row">
-                <div class="radio-opt">
-                    <input type="radio" id="pay2" name="payOpt" value="2">
-                    <label for="pay2">2-Pay</label>
-                </div>
-                <div class="radio-opt">
-                    <input type="radio" id="pay5" name="payOpt" value="5" checked>
-                    <label for="pay5">5-Pay</label>
-                </div>
+    <div id="harvestPayFixed" style="display:none">
+        <div class="radio-row">
+            <div class="radio-opt">
+                <input type="radio" id="hPay3" name="harvestPayOpt" value="3" checked>
+                <label for="hPay3" style="border-color:#b45309;color:#7c2d12">3-Pay<br><small style="font-size:10px;font-weight:400">No Discount · 4% GTD</small></label>
             </div>
-        </div>
-
-        <!-- Exchange Rates -->
-        <div class="input-group">
-            <label>Exchange Rate Settings</label>
-            <div class="rate-grid">
-                <div class="rate-item">
-                    <label for="usdHkd">USD/HKD Rate:</label>
-                    <input type="number" id="usdHkd" class="input-field"
-                           value="7.8357" step="0.0001" min="1"
-                           style="padding:10px;font-size:13px;">
-                </div>
-                <div class="rate-item">
-                    <label for="usdThb">USD/THB Rate:</label>
-                    <input type="number" id="usdThb" class="input-field"
-                           value="33.38" step="0.001" min="1"
-                           style="padding:10px;font-size:13px;">
-                </div>
+            <div class="radio-opt">
+                <input type="radio" id="hPay5" name="harvestPayOpt" value="5">
+                <label for="hPay5">5-Pay<br><small style="font-size:10px;font-weight:400">10% Y1 · 4% non-GTD</small></label>
             </div>
-            <div class="rate-note">
-                📅 Rates as of 13 Jul 2026 — USD/THB: 33.38 · HKD/THB: 4.26 → USD/HKD: 7.8357
-            </div>
-        </div>
-
-        <!-- Manual Levy -->
-        <div class="input-group">
-            <div id="levySection" class="levy-section">
-                <div class="levy-toggle">
-                    <input type="checkbox" id="useManualLevy">
-                    <label for="useManualLevy">Use Manual Levy Amount (USD)</label>
-                </div>
-                <label for="manualLevy" style="font-size:12px;color:#666;display:block;margin-bottom:6px;">
-                    Set custom levy — overrides auto calculation
-                </label>
-                <div class="input-wrap">
-                    <span class="input-prefix">$</span>
-                    <input type="number" id="manualLevy" class="input-field pl"
-                           value="12.72" step="0.01" min="0" disabled
-                           style="background:#f0f0f0;">
-                </div>
-                <div class="levy-hint">
-                    <strong>Auto levy:</strong> 0.1% per year, capped at HKD 100
-                    (≈ USD $12.76 at 7.8357). Enable to override.
-                </div>
-            </div>
-        </div>
-
-        <!-- Conditions -->
-        <div class="conditions-box">
-            <h4>📋 Policy Requirements & Conditions</h4>
-            <ul>
-                <li><strong>2-Pay Minimum Premium:</strong> USD $4,610</li>
-                <li><strong>5-Pay Minimum Premium:</strong> USD $1,977</li>
-                <li><strong>Age Requirement:</strong> Maximum age 75 years</li>
-                <li><strong>Insurance Levy:</strong> 0.1% per year, capped at HKD $100</li>
-            </ul>
-        </div>
-
-        <!-- Promotion Details -->
-        <div class="promo-details-box">
-            <h4>🎁 Q3 2026 Promotion Details (1 Jul – 30 Sep 2026) · Policy Issue by 31 Oct 2026</h4>
-            <table class="promo-table">
-                <thead>
-                    <tr><th>Offer</th><th>2-Pay</th><th>5-Pay</th></tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Premium Discount (no rider)</td>
-                        <td><span class="hi-blue">10%</span><br><small>(Year 1 only)</small></td>
-                        <td><span class="hi-blue">10%</span><br><small>(each year, Y1–Y5)</small></td>
-                    </tr>
-                    <tr>
-                        <td>Y2 Prepay Discount (no rider)</td>
-                        <td><span class="hi-red">3.71%</span> <span class="badge-new">NEW</span><br><small>(prepay only)</small></td>
-                        <td>–</td>
-                    </tr>
-                    <tr>
-                        <td>Extra Discount (with Rider)</td>
-                        <td><span class="hi-red">+2%</span> Y1, <span class="hi-red">5.63%</span> Y2 prepay</td>
-                        <td><span class="hi-red">+2%</span> each year (→12% total)</td>
-                    </tr>
-                    <tr>
-                        <td>Prepayment Interest</td>
-                        <td colspan="2"><span class="hi-blue">4% p.a.</span> (non-guaranteed)</td>
-                    </tr>
-                </tbody>
-            </table>
-            <div style="margin-top:8px;font-size:11px;color:#666;">
-                ℹ️ Rider = Easy Shield Waiver of Premium Benefit · HK signing required for extra discount
-            </div>
-        </div>
-
-        <!-- Annual Premium -->
-        <div class="input-group">
-            <label for="annualPremium">Annual Premium (USD)</label>
-            <div class="input-wrap">
-                <span class="input-prefix">$</span>
-                <input type="number" id="annualPremium" class="input-field pl"
-                       value="12000.08" step="0.01" min="1977">
-            </div>
-            <div id="premiumError" class="field-error"></div>
-        </div>
-
-        <!-- Calc Button -->
-        <button id="calcBtn" class="calc-btn">
-            <div class="spinner" id="spinner"></div>
-            <span id="btnLabel">Calculate Premium</span>
-        </button>
-
-        <!-- ══════════ RESULTS ══════════ -->
-        <div id="resultsArea" class="results-area">
-
-            <!-- Card 1: Standard -->
-            <div class="result-card">
-                <h3>Standard (Premium Discount) Payment</h3>
-                <p class="subtitle" id="standardSubtitle"></p>
-                <div class="result-amount" id="standardAmount"></div>
-                <div class="detail-box" id="standardDetails"></div>
-            </div>
-
-            <!-- Card 2: Prepayment -->
-            <div class="result-card prepay">
-                <h3>Prepayment Option</h3>
-                <p class="subtitle">Pay all premiums upfront (lump sum)</p>
-                <div class="result-amount" id="prepayAmount"></div>
-                <div class="info-pill">Goal Seek algorithm applied for optimised prepayment calculation</div>
-                <div class="breakdown-box" id="prepayBreakdown"></div>
-            </div>
-
-            <button class="btn-action btn-analysis" onclick="showAnalysisModal()">
-                📊 View Full Payment Analysis
-            </button>
-
-            <!-- Goal Seek -->
-            <div class="goal-section">
-                <h3>🎯 Goal Seek Calculator</h3>
-                <p>Enter target grand payment amount → find required annual premium</p>
-                <div class="input-wrap" style="margin-bottom:12px;">
-                    <span class="input-prefix">$</span>
-                    <input type="number" id="targetAmount" class="input-field pl"
-                           placeholder="e.g. 50000" value="50000" min="1000" step="100">
-                </div>
-                <button class="btn-goal" onclick="runGoalSeek()">Calculate Required Premium</button>
-                <div id="goalResult" class="goal-result">
-                    <div style="font-size:12px;color:#6c757d;margin-bottom:4px;">Required Annual Premium</div>
-                    <div class="goal-amount" id="goalPremium">$0</div>
-                    <div class="detail-box" style="margin-top:12px;text-align:left;">
-                        <div class="d-row">
-                            <span class="d-label">Payment Option</span>
-                            <span class="d-value" id="goalPayOpt">–</span>
-                        </div>
-                        <div class="d-row">
-                            <span class="d-label">Target Grand Total</span>
-                            <span class="d-value" id="goalTarget">–</span>
-                        </div>
-                        <div class="d-row">
-                            <span class="d-label">Equivalent (THB)</span>
-                            <span class="d-value" id="goalTargetThb">–</span>
-                        </div>
-                        <div class="d-row">
-                            <span class="d-label">Annual Premium (THB)</span>
-                            <span class="d-value" id="goalPremiumThb">–</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Extra Discount -->
-            <button class="btn-action btn-extra" id="extraBtn">
-                🏷️ Extra Premium Discount Offer
-                <small>Additional 2% with Easy Shield Rider · HK Signing Required</small>
-            </button>
-
-        </div><!-- /resultsArea -->
-    </div><!-- /form-body -->
-
-    <!-- Footer -->
-    <div class="footer">
-        This calculator is for estimation purposes only.<br>
-        Please consult your financial advisor for official quotations.<br>
-        <strong>Chubb Life | My Legacy Plan V – Blossom Calculator</strong>
-        <div class="rider-note">
-            <strong>📌 About "Extra Premium Discount Offer"</strong><br>
-            Rider: <strong>Easy Shield Waiver of Premium Benefit</strong><br>
-            Extra 2% each year for the whole policy term (2-Pay &amp; 5-Pay)<br>
-            Policy signing must be done in <strong>Hong Kong</strong> during promotion period.<br>
-            <a href="https://www.chubb.com/hk-en/personal/easy-shield-waiver-of-premium-benefit.html"
-               target="_blank">→ Official Chubb page for full details</a>
         </div>
     </div>
 </div>
 
-<!-- MODAL: Full Analysis -->
+<!-- EASY SHIELD RIDER (Blossom only) -->
+<div class="input-group" id="riderGroup">
+    <label>Easy Shield Rider</label>
+    <div class="radio-row rider-radio">
+        <div class="radio-opt">
+            <input type="radio" id="riderNo" name="riderOpt" value="no" checked>
+            <label for="riderNo" class="no">No Rider</label>
+        </div>
+        <div class="radio-opt">
+            <input type="radio" id="riderYes" name="riderOpt" value="yes">
+            <label for="riderYes" class="yes">+2% Rider</label>
+        </div>
+    </div>
+    <div id="riderNotice" class="rider-notice">
+        🏷️ <strong>Easy Shield Rider Active:</strong> Extra 2% discount each year (whole policy). HK signing required.
+    </div>
+</div>
+
+<!-- EXCHANGE RATES -->
+<div class="input-group">
+    <label>Exchange Rate Settings</label>
+    <div class="rate-grid">
+        <div class="rate-item">
+            <label for="usdHkd">USD/HKD:</label>
+            <input type="number" id="usdHkd" class="input-field" value="7.8357" step="0.0001" min="1" style="padding:9px;font-size:12px;">
+        </div>
+        <div class="rate-item">
+            <label for="usdThb">USD/THB:</label>
+            <input type="number" id="usdThb" class="input-field" value="33.38" step="0.001" min="1" style="padding:9px;font-size:12px;">
+        </div>
+    </div>
+    <div class="rate-note">📅 13 Jul 2026 — USD/THB: 33.38 · HKD/THB: 4.26 → USD/HKD: 7.8357</div>
+</div>
+
+<!-- MANUAL LEVY -->
+<div class="input-group">
+    <div id="levySection" class="levy-section">
+        <div class="levy-toggle">
+            <input type="checkbox" id="useManualLevy">
+            <label for="useManualLevy">Use Manual Levy Amount (USD)</label>
+        </div>
+        <label for="manualLevy" style="font-size:11px;color:#666;display:block;margin-bottom:5px;">Set custom levy — overrides auto</label>
+        <div class="input-wrap">
+            <span class="input-prefix">$</span>
+            <input type="number" id="manualLevy" class="input-field pl" value="12.76" step="0.01" min="0" disabled style="background:#f0f0f0;">
+        </div>
+        <div class="levy-hint"><strong>Auto:</strong> 0.1%/yr, capped HKD 100 (≈ USD $12.76). Toggle to override.</div>
+    </div>
+</div>
+
+<!-- CONDITIONS BOX -->
+<div id="condBox"></div>
+
+<!-- PROMO BOX -->
+<div id="promoBox"></div>
+
+<!-- PREMIUM INPUT -->
+<div class="input-group">
+    <label for="annualPremium">Annual Premium (USD)</label>
+    <div class="input-wrap">
+        <span class="input-prefix">$</span>
+        <input type="number" id="annualPremium" class="input-field pl" value="12000.08" step="0.01" min="1977">
+    </div>
+    <div id="premiumError" class="field-error"></div>
+</div>
+
+<!-- CALC BUTTON -->
+<button id="calcBtn" class="calc-btn">
+    <div class="spinner" id="spinner"></div>
+    <span id="btnLabel">Calculate Premium</span>
+</button>
+
+<!-- RESULTS -->
+<div id="resultsArea" class="results-area">
+
+    <div class="result-card" id="stdCard">
+        <h3 id="stdTitle">Standard Payment</h3>
+        <p class="subtitle" id="stdSub"></p>
+        <div class="result-amount" id="stdAmt"></div>
+        <div class="detail-box" id="stdDet"></div>
+    </div>
+
+    <div class="result-card prep-card" id="prepCard">
+        <h3 id="prepTitle">Prepayment Option</h3>
+        <p class="subtitle" id="prepSub"></p>
+        <div class="result-amount" id="prepAmt"></div>
+        <div id="prepPill"></div>
+        <div class="bdown" id="prepBdown"></div>
+    </div>
+
+    <button class="btn-act btn-analysis" onclick="showAnalysis()">📊 Full Payment Analysis</button>
+
+    <button class="btn-act btn-extra" id="extraBtn" onclick="showExtraModal()">
+        🏷️ Extra Premium Discount Offer
+        <small>Additional 2% with Easy Shield Rider – HK Signing Required</small>
+    </button>
+
+    <!-- GOAL SEEK -->
+    <div class="goal-section" id="goalSection">
+        <h3 id="gsTitle">🎯 Goal Seek Calculator</h3>
+        <p id="gsDesc">Enter target prepayment grand total → find required annual premium</p>
+        <div class="input-wrap" style="margin-bottom:11px">
+            <span class="input-prefix">$</span>
+            <input type="number" id="targetAmount" class="input-field pl" placeholder="e.g. 50000" value="50000" min="1000" step="100">
+        </div>
+        <button class="btn-goal" onclick="runGoalSeek()">Find Required Premium</button>
+        <div id="goalResult" class="goal-result">
+            <div style="font-size:11px;color:#6c757d;margin-bottom:3px">Required Annual Premium</div>
+            <div class="goal-amount" id="goalPremium">$0</div>
+            <div class="detail-box" style="margin-top:10px;text-align:left">
+                <div class="d-row"><span class="d-label">Payment Option</span><span class="d-value" id="gPayOpt">–</span></div>
+                <div class="d-row"><span class="d-label">Target Grand Total</span><span class="d-value" id="gTarget">–</span></div>
+                <div class="d-row"><span class="d-label">Target (THB)</span><span class="d-value" id="gTargetThb">–</span></div>
+                <div class="d-row"><span class="d-label">Annual Premium (THB)</span><span class="d-value" id="gPremThb">–</span></div>
+                <div class="d-row" id="gIncRow" style="display:none"><span class="d-label">Premium Base ↑ vs entered</span><span class="d-value" id="gIncrease">–</span></div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /resultsArea -->
+</div><!-- /form-body -->
+
+<!-- FOOTER -->
+<div class="footer">
+    For estimation purposes only. Consult official Chubb Life illustration for binding figures.<br>
+    <strong>Chubb Life | My Legacy Plan V Calculator | v6.0</strong>
+    <div class="rider-note" id="footerNote">
+        <strong>📌 Easy Shield Waiver of Premium Benefit Rider (Blossom only)</strong><br>
+        Extra 2% discount, whole policy term. In-person signing in <strong>Hong Kong</strong> required during promotion period.<br>
+        <a href="https://www.chubb.com/hk-en/personal/easy-shield-waiver-of-premium-benefit.html" target="_blank">→ Official Chubb page</a>
+    </div>
+</div>
+</div><!-- /container -->
+
+<!-- MODAL: Analysis -->
 <div id="analysisModal" class="modal-overlay">
     <div class="modal-box">
-        <div class="modal-head">
-            <div><h2>Full Payment Analysis</h2><p>Detailed breakdown &amp; comparison</p></div>
+        <div class="modal-head" id="analysisHead">
+            <div><h2>Full Payment Analysis</h2><p id="analysisSub"></p></div>
             <button class="modal-close" onclick="closeModal('analysisModal')">&times;</button>
         </div>
-        <div class="modal-body" id="analysisContent"></div>
+        <div class="modal-body" id="analysisBody"></div>
     </div>
 </div>
 
-<!-- MODAL: Extra Discount -->
+<!-- MODAL: Extra Discount (Blossom) -->
 <div id="extraModal" class="modal-overlay">
     <div class="modal-box">
-        <div class="modal-head red">
-            <div><h2>Extra Premium Discount</h2><p>+2% with Easy Shield Rider</p></div>
-            <button class="modal-close" onclick="closeModal('extraModal')">&times;</button>
-        </div>
-        <div class="modal-body" id="extraContent"></div>
+        <div class="modal-head red"><div><h2>Extra Premium Discount</h2><p>+2% with Easy Shield Rider</p></div>
+        <button class="modal-close" onclick="closeModal('extraModal')">&times;</button></div>
+        <div class="modal-body" id="extraBody"></div>
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     JAVASCRIPT
-═══════════════════════════════════════════ -->
 <script>
 'use strict';
-
-/* ──────────────────────────────────────────────────────────
-   PROMOTION CONFIGURATION  ← UPDATE THIS SECTION EACH QUARTER
-────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════
+   PROMO CONFIG  ← UPDATE EACH QUARTER
+════════════════════════════════════════════════ */
 const PROMO = {
-    start:           new Date('2026-07-01'),   // Promotion start
-    end:             new Date('2026-09-30'),   // Promotion end (inclusive)
-    issueBy:         '31 October 2026',        // Policy issue deadline
-    label:           '1 July – 30 September 2026',
-    updatedDate:     '13 July 2026',
+    start:   new Date('2026-07-01'),
+    end:     new Date('2026-09-30'),
+    issueBy: '31 October 2026',
+    label:   '1 July – 30 September 2026',
 
-    discount2Pay:    0.10,   // 10% — Year 1 ONLY (2-Pay)            ← Q3: was 12%
-    discount5Pay:    0.10,   // 10% — each year Y1–Y5 (5-Pay)
-    extraDiscRate:   0.02,   // Extra 2% with Easy Shield Rider
+    blossom: {
+        minPrem: {2:4610, 5:1977},
+        d2_y1_nr:0.10, d2_y1_wr:0.12,
+        d2_y2s_nr:0.00, d2_y2s_wr:0.02,
+        d2_y2p_nr:0.0371, d2_y2p_wr:0.0563,
+        d5_nr:0.10, d5_wr:0.12,
+        extraRate:0.02,
+        ir:0.04,
+    },
 
-    // Q3 NEW: Year 2 prepay discounts for 2-Pay
-    prepay2Y_noRider: 0.0371,  // 3.71% — Y2 prepay discount, no rider
-    prepay2Y_rider:   0.0563,  // 5.63% — Y2 prepay discount, with rider
-    std2Y_rider:      0.02,    // 2%    — Y2 standard discount, with rider
-
-    prepayInterest:  0.04,   // 4% p.a. non-guaranteed
+    harvest: {
+        minPrem: { 3:3500, 5:2000 },
+        /* 3-Pay: no discount, 4% GUARANTEED */
+        d3_y1: 0.00,  ir3: 0.04,  ir3Gtd: true,
+        /* 5-Pay Q3: 10% Year 1 only, 4% non-guaranteed */
+        d5_y1: 0.10,  ir5: 0.04,  ir5Gtd: false,
+        hasRider: false,
+    },
 };
-
-/* ── Constants ── */
-const MIN_PREMIUM  = { 2: 4610, 5: 1977 };
-const LEVY_RATE    = 0.001;
-const LEVY_MAX_HKD = 100;
-
-/* ── State ── */
-let R = {};
 
 /* ── Helpers ── */
 const $ = id => document.getElementById(id);
-const fmt = (v,d=2) => v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
-const usd  = v => '$' + fmt(v);
-const thb  = v => '฿' + fmt(v,0);
+const f2 = v => v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const usd = v => '$'+f2(v);
+const thb = v => '฿'+v.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+const pct = v => (v*100).toFixed(2).replace(/\.?0+$/,'')+'%';
 
-/* ════════════════════════════════════════════
+function getProduct(){ return document.querySelector('input[name="product"]:checked').value; }
+function isHarvest(){ return getProduct()==='harvest'; }
+function getPayOpt(){
+    if(isHarvest()){
+        const el=document.querySelector('input[name="harvestPayOpt"]:checked');
+        return el?parseInt(el.value):3;
+    }
+    return parseInt(document.querySelector('input[name="payOpt"]:checked').value);
+}
+function hasRider(){ return !isHarvest()&&document.querySelector('input[name="riderOpt"]:checked').value==='yes'; }
+function getUsdHkd(){ return parseFloat($('usdHkd').value)||7.8357; }
+function getUsdThb(){ return parseFloat($('usdThb').value)||33.38; }
+
+function calcLevy(P){
+    if($('useManualLevy').checked) return parseFloat($('manualLevy').value)||0;
+    return Math.min(P*0.001, 100/getUsdHkd());
+}
+
+/* ── 5-Pay goal seek ── */
+function gs5(annual,ir,years){
+    let lo=0,hi=annual*years*3;
+    const sim=x=>{let b=x;for(let y=1;y<years-1;y++)b=(b-annual)*(1+ir);return b;};
+    for(let i=0;i<150;i++){const m=(lo+hi)/2,r=sim(m);if(Math.abs(r-annual)<0.001){lo=hi=m;break;}r>annual?hi=m:lo=m;}
+    return (lo+hi)/2;
+}
+
+let R={};
+
+/* ════════════════════════════════════════════════
    INIT
-════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
+════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
     initBanner();
-    updateMinPremium();
-    $('calcBtn').onclick  = calculate;
-    $('extraBtn').onclick = showExtraModal;
-    document.querySelectorAll('input[name="payOpt"]')
-        .forEach(r => r.addEventListener('change', updateMinPremium));
-    $('annualPremium').addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
-    $('useManualLevy').addEventListener('change', toggleManualLevy);
-    document.querySelectorAll('.modal-overlay').forEach(m =>
-        m.addEventListener('click', e => { if(e.target===m) m.classList.remove('show'); })
-    );
+    updateProductUI();
+    $('calcBtn').onclick=calculate;
+    document.querySelectorAll('input[name="product"]').forEach(r=>r.addEventListener('change',onProductChange));
+    document.querySelectorAll('input[name="harvestPayOpt"]').forEach(r=>r.addEventListener('change',()=>{updateMinPremium();buildCondBox();buildPromoBox();}));
+    document.querySelectorAll('input[name="payOpt"]').forEach(r=>r.addEventListener('change',updateMinPremium));
+    document.querySelectorAll('input[name="riderOpt"]').forEach(r=>r.addEventListener('change',()=>$('riderNotice').classList.toggle('show',hasRider())));
+    $('annualPremium').addEventListener('keypress',e=>{if(e.key==='Enter')calculate();});
+    $('useManualLevy').addEventListener('change',toggleLevy);
+    document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
 });
 
-function initBanner() {
-    const now    = new Date();
-    const active = now >= PROMO.start && now <= PROMO.end;
-    $('promoBanner').className = 'promo-banner ' + (active ? 'promo-active' : 'promo-inactive');
-    $('promoStatus').textContent = active
-        ? '🎉 Premium Discount & Prepayment Offer Currently Active!'
-        : '⚠️ Premium Discount & Prepayment Offer Not Currently Active';
-    $('promoPeriod').textContent = 'Promotion Period: ' + PROMO.label;
+function initBanner(){
+    const now=new Date(),active=now>=PROMO.start&&now<=PROMO.end;
+    $('promoBanner').className='promo-banner '+(active?'promo-active':'promo-inactive');
+    $('promoStatus').textContent=active?'🎉 Promotion Currently Active!':'⚠️ Promotion Not Currently Active';
+    $('promoPeriod').textContent='Period: '+PROMO.label+'  ·  Policy Issue by: '+PROMO.issueBy;
 }
 
-function getPayOpt() { return parseInt(document.querySelector('input[name="payOpt"]:checked').value); }
-function getUsdHkd() { return parseFloat($('usdHkd').value) || 7.8357; }
-function getUsdThb() { return parseFloat($('usdThb').value) || 33.38; }
-
-function updateMinPremium() {
-    const p = getPayOpt();
-    $('annualPremium').min = MIN_PREMIUM[p];
-    $('premiumError').textContent = `Minimum premium is USD $${MIN_PREMIUM[p].toLocaleString()} for ${p}-Pay`;
+function toggleLevy(){
+    const on=$('useManualLevy').checked;
+    $('manualLevy').disabled=!on; $('manualLevy').style.background=on?'#fff':'#f0f0f0';
+    $('levySection').className='levy-section'+(on?' active':'');
 }
 
-function toggleManualLevy() {
-    const on  = $('useManualLevy').checked;
-    const inp = $('manualLevy');
-    inp.disabled         = !on;
-    inp.style.background = on ? '#fff' : '#f0f0f0';
-    $('levySection').className = 'levy-section' + (on ? ' active' : '');
+/* ════════════════════════════════════════════════
+   PRODUCT UI SWITCH
+════════════════════════════════════════════════ */
+function onProductChange(){
+    updateProductUI();
+    $('resultsArea').style.display='none';
+    $('goalResult').style.display='none';
 }
 
-/* ════════════════════════════════════════════
-   LEVY
-════════════════════════════════════════════ */
-function calcLevy(premium) {
-    if ($('useManualLevy').checked) return parseFloat($('manualLevy').value) || 0;
-    return Math.min(premium * LEVY_RATE, LEVY_MAX_HKD / getUsdHkd());
+function updateProductUI(){
+    const hv=isHarvest();
+    /* Header */
+    $('mainHeader').className='header'+(hv?' harvest-hdr':'');
+    $('headerSub').textContent=hv?'My Legacy Plan V – Harvest (3-Pay)':'My Legacy Plan V – Blossom';
+    /* Pay opts */
+    $('blossomPayOpts').style.display=hv?'none':'flex';
+    $('harvestPayFixed').style.display=hv?'block':'none';
+    /* Rider */
+    $('riderGroup').style.display=hv?'none':'block';
+    if(hv)$('riderNotice').classList.remove('show');
+    /* Extra btn */
+    $('extraBtn').style.display=hv?'none':'flex';
+    /* Product note */
+    const note=$('productNote');
+    note.className='product-note '+(hv?'harvest':'blossom');
+    note.innerHTML=hv
+        ?'🌾 <strong>Harvest:</strong> Capital efficiency · 3-Pay (ไม่มีส่วนลด · 4% GTD) · 5-Pay (10% Y1 · 4% non-GTD) · ไม่มี Easy Shield Rider'
+        :'🌸 <strong>Blossom:</strong> Long-term savings &amp; legacy planning · 2-Pay or 5-Pay · Easy Shield Rider available · 10% discount Q3 2026';
+    /* Buttons */
+    $('calcBtn').className='calc-btn'+(hv?' harvest-btn':'');
+    $('goalSection').className='goal-section'+(hv?' harvest-gs':'');
+    $('gsTitle').textContent=hv?(p===3?'🎯 Goal Seek (Harvest 3-Pay)':'🎯 Goal Seek (Harvest 5-Pay)'):'🎯 Goal Seek Calculator';
+    $('gsDesc').textContent=hv?'ระบุงบประมาณ Prepayment → หาเบี้ยรายปีที่เหมาะสม (ไม่มีส่วนลด · 4% guaranteed)':'Enter target prepayment grand total → find required annual premium';
+    /* Info boxes */
+    buildCondBox(); buildPromoBox();
+    updateMinPremium();
+    updateBtnLabel();
 }
 
-/* ════════════════════════════════════════════
-   GOAL SEEK — 5-Pay Prepayment Solver
-   Find initial deposit X that, earning 4% and
-   releasing one payment/year, is exhausted by Year 5
-════════════════════════════════════════════ */
-function goalSeek5Pay(annualPayment, rate, years) {
-    // We want X such that after (years-1) withdrawals of annualPayment,
-    // and earning rate each year, the balance reaches exactly annualPayment.
-    // Binary search.
-    let lo = 0, hi = annualPayment * years * 3;
-    for (let i = 0; i < 150; i++) {
-        const mid = (lo + hi) / 2;
-        const res = simulate(mid);
-        if (Math.abs(res - annualPayment) < 0.001) { lo = hi = mid; break; }
-        res > annualPayment ? hi = mid : lo = mid;
+function updateBtnLabel(loading){
+    const hv=isHarvest();
+    $('btnLabel').textContent=loading?'Calculating…':(hv?`🌾 คำนวณ Harvest ${getPayOpt()}-Pay`:'Calculate Premium');
+}
+
+function updateMinPremium(){
+    const hv=isHarvest(),p=getPayOpt();
+    if(hv){
+        const minP=PROMO.harvest.minPrem[p]||3500;
+        $('annualPremium').min=minP;
+        $('premiumError').textContent=`Minimum premium is USD $${minP.toLocaleString()} for Harvest ${p}-Pay`;
+    } else {
+        $('annualPremium').min=PROMO.blossom.minPrem[p];
+        $('premiumError').textContent=`Minimum premium is USD $${PROMO.blossom.minPrem[p].toLocaleString()} for ${p}-Pay`;
     }
-    return (lo + hi) / 2;
-
-    function simulate(x) {
-        // Simulate years-2 withdrawals, then return remaining balance
-        let bal = x;
-        for (let y = 1; y < years - 1; y++) {
-            bal = (bal - annualPayment) * (1 + rate);
-        }
-        return bal;
-    }
 }
 
-/* ════════════════════════════════════════════
-   MAIN CALCULATION
-════════════════════════════════════════════ */
-function calculate() {
-    const premium = parseFloat($('annualPremium').value);
-    const payOpt  = getPayOpt();
-    const minP    = MIN_PREMIUM[payOpt];
+function buildCondBox(){
+    const hv=isHarvest(),p=getPayOpt();
+    const minP=hv?(PROMO.harvest.minPrem[p]||3500):null;
+    $('condBox').innerHTML=hv
+        ?`<div class="cond-box harvest"><h4>📋 Harvest ${p}-Pay — Policy Requirements</h4><ul>
+            <li><strong>Minimum Premium:</strong> USD $${minP.toLocaleString()}</li>
+            <li><strong>Issue Age:</strong> 15 days – Max 75 years</li>
+            <li><strong>Insurance Levy:</strong> 0.1%/year, capped at HKD $100</li>
+            <li><strong>Policy Issue Deadline:</strong> on or before 31 October 2026</li>
+            ${p===3?'<li><strong>No Premium Discount</strong> (Q3 2026 for 3-Pay)</li><li>Prepayment interest: <strong>4% p.a. GUARANTEED</strong> (Years 2–3)</li>'
+                   :'<li><strong>10% Premium Discount</strong> Year 1 only (5-Pay Q3 2026)</li><li>Prepayment interest: <strong>4% p.a. non-guaranteed</strong> (Years 2–5)</li>'}
+            <li><strong>No Easy Shield Rider</strong> for Harvest</li>
+           </ul></div>`
+        :`<div class="cond-box"><h4>📋 Blossom — Policy Requirements</h4><ul>
+            <li><strong>2-Pay Min:</strong> USD $4,610 &nbsp;|&nbsp; <strong>5-Pay Min:</strong> USD $1,977</li>
+            <li><strong>Issue Age:</strong> 15 days – Max 75 years</li>
+            <li><strong>Insurance Levy:</strong> 0.1%/year, capped at HKD $100</li>
+            <li><strong>Policy Issue Deadline:</strong> on or before 31 October 2026</li>
+           </ul></div>`;
+}
 
-    if (!premium || premium < minP) {
-        $('premiumError').style.display = 'block';
-        return;
-    }
-    $('premiumError').style.display = 'none';
+function buildPromoBox(){
+    const hv=isHarvest(),p=getPayOpt();
+    $('promoBox').innerHTML=hv
+        ?(p===3
+            ?`<div class="promo-box harvest"><h4>🎁 Harvest 3-Pay Q3 2026 Promotion</h4>
+                <table class="ptable ht"><thead><tr><th>Item</th><th>Harvest 3-Pay</th></tr></thead>
+                <tbody>
+                    <tr><td>Premium Discount</td><td><strong style="color:#b91c1c">None (0%)</strong></td></tr>
+                    <tr><td>Easy Shield Rider</td><td>ไม่มี</td></tr>
+                    <tr><td>Prepayment Interest</td><td><span class="hi-g">4% p.a.</span> <span class="badge-gtd">GUARANTEED ✓</span></td></tr>
+                    <tr><td>Prepay ครอบคลุม</td><td>Year 2 &amp; 3 (2 ปี)</td></tr>
+                    <tr><td>Formula</td><td>(P+L)×2.8861</td></tr>
+                </tbody></table>
+                <div style="margin-top:7px;font-size:10px;color:#7c2d12">✅ 4% GUARANTEED — ต่างจาก Blossom ที่ non-guaranteed</div>
+             </div>`
+            :`<div class="promo-box harvest"><h4>🎁 Harvest 5-Pay Q3 2026 Promotion</h4>
+                <table class="ptable ht"><thead><tr><th>Item</th><th>Harvest 5-Pay</th></tr></thead>
+                <tbody>
+                    <tr><td>Premium Discount</td><td><span class="hi-r">10%</span> Year 1 เท่านั้น</td></tr>
+                    <tr><td>Y2–Y5</td><td>Full premium (ไม่มีส่วนลด)</td></tr>
+                    <tr><td>Easy Shield Rider</td><td>ไม่มี</td></tr>
+                    <tr><td>Prepayment Interest</td><td><span class="hi-g">4% p.a.</span> (non-guaranteed)</td></tr>
+                    <tr><td>Prepay ครอบคลุม</td><td>Year 2–5 (4 ปี)</td></tr>
+                </tbody></table>
+                <div style="margin-top:7px;font-size:10px;color:#7c2d12">⚠️ 4% non-guaranteed — ต่างจาก Harvest 3-Pay ที่ Guaranteed</div>
+             </div>`)
+        :`<div class="promo-box"><h4>🎁 Blossom Q3 2026 Promotion (1 Jul – 30 Sep 2026)</h4>
+            <table class="ptable"><thead><tr><th>Offer</th><th>2-Pay</th><th>5-Pay</th></tr></thead>
+            <tbody>
+                <tr><td>Discount (no rider)</td>
+                    <td><span class="hi-b">10%</span> Y1 · <span class="hi-r">3.71%</span> Y2 prepay<br><small>(prepay only)</small></td>
+                    <td><span class="hi-b">10%</span> each year</td>
+                </tr>
+                <tr><td>With Rider (+2%)</td>
+                    <td><span class="hi-r">12%</span> Y1 · <span class="hi-r">5.63%</span> Y2 prepay · <span class="hi-r">2%</span> Y2 std</td>
+                    <td><span class="hi-r">12%</span> each year</td>
+                </tr>
+                <tr><td>Prepayment Interest</td><td colspan="2"><span class="hi-g">4% p.a.</span> (non-guaranteed)</td></tr>
+            </tbody></table>
+            <div style="margin-top:7px;font-size:10px;color:#666">ℹ️ Rider = Easy Shield Waiver of Premium Benefit · HK signing required</div>
+         </div>`;
+}
+
+/* ════════════════════════════════════════════════
+   CALCULATE
+════════════════════════════════════════════════ */
+function calculate(){
+    const P=parseFloat($('annualPremium').value), hv=isHarvest(), p=getPayOpt();
+    const minP=hv?(PROMO.harvest.minPrem[p]||3500):PROMO.blossom.minPrem[p];
+    if(!P||P<minP){$('premiumError').style.display='block';return;}
+    $('premiumError').style.display='none';
     showLoading(true);
-    setTimeout(() => {
-        try { doCalc(premium, payOpt); }
-        catch(e) { console.error(e); alert('Calculation error – please try again.'); }
-        finally  { showLoading(false); }
-    }, 380);
+    setTimeout(()=>{
+        try{hv?doCalcHarvest(P):doCalcBlossom(P,getPayOpt());}
+        catch(e){console.error(e);alert('Calculation error.');}
+        finally{showLoading(false);}
+    },350);
 }
 
-function doCalc(premium, payOpt) {
-    const levy     = calcLevy(premium);
-    const levyType = $('useManualLevy').checked ? 'Manual ✓' : 'Auto 🔄';
-    const ir       = PROMO.prepayInterest;
-    const usdThb   = getUsdThb();
-    const usdHkd   = getUsdHkd();
-
-    // Discount rate depends on payment option
-    const dr = payOpt === 2 ? PROMO.discount2Pay : PROMO.discount5Pay;
-    const discountedPremium = premium * (1 - dr);   // premium after discount
-    const discountAmt       = premium * dr;
-    const discPlusLevy      = discountedPremium + levy;
-    const totalInitial      = premium + levy;
-
-    /* ── Standard Payment ── */
-    let std = {};
-    if (payOpt === 2) {
-        // 2-Pay: 12% discount Year 1 only, Year 2 = full premium
-        const y1 = discPlusLevy;                  // Year 1: discounted + levy
-        const y2 = premium + levy;                // Year 2: full premium + levy
-        std = { year1: y1, year2: y2, total: y1 + y2, discountTotal: discountAmt };
+/* ── BLOSSOM ── */
+function doCalcBlossom(P,payOpt){
+    const rider=hasRider(),levy=calcLevy(P),levyType=$('useManualLevy').checked?'Manual ✓':'Auto 🔄';
+    const ir=PROMO.blossom.ir,B=PROMO.blossom;
+    let std={},prep={};
+    if(payOpt===2){
+        const dr1=rider?B.d2_y1_wr:B.d2_y1_nr,dr2s=rider?B.d2_y2s_wr:B.d2_y2s_nr,dr2p=rider?B.d2_y2p_wr:B.d2_y2p_nr;
+        const y1=P*(1-dr1)+levy,y2=P*(1-dr2s)+levy;
+        std={y1,y2,total:y1+y2,dr1,dr2s};
+        const prepB=P*(1-dr2p)/(1+ir),prepC=levy/(1+ir);
+        prep={y1Paid:y1,prepB,prepC,prepTotal:prepB+prepC,grand:y1+prepB+prepC,dr2p};
     } else {
-        // 5-Pay: 10% discount every year
-        const yp = discPlusLevy;
-        std = { yearlyPay: yp, total: yp * 5, discountTotal: discountAmt * 5 };
+        const dr=rider?B.d5_wr:B.d5_nr,disc=P*(1-dr),yp=disc+levy;
+        std={yearlyPay:yp,total:yp*5,dr};
+        const prepB=gs5(disc,ir,5),prepC=gs5(levy,ir,5);
+        prep={y1Paid:yp,prepB,prepC,prepTotal:prepB+prepC,grand:yp+prepB+prepC,dr};
+    }
+    R={product:'blossom',payOpt,P,levy,levyType,rider,usdThb:getUsdThb(),usdHkd:getUsdHkd(),ir,...std,...prep,extraRate:B.extraRate};
+    renderBlossom(); showResults();
+}
+
+/* ── HARVEST (3-Pay & 5-Pay) ── */
+function doCalcHarvest(P){
+    const payOpt=getPayOpt(),levy=calcLevy(P),levyType=$('useManualLevy').checked?'Manual ✓':'Auto 🔄';
+    const H=PROMO.harvest;
+    let std={},grand,deposit,y1Paid,prepY2,prepY3,prepDetail={};
+
+    if(payOpt===3){
+        /* 3-Pay: no discount, 4% GUARANTEED */
+        const ir=H.ir3,perYear=P+levy;
+        std={y1:perYear,y2:perYear,y3:perYear,total:perYear*3};
+        prepY2=perYear/(1+ir); prepY3=perYear/Math.pow(1+ir,2);
+        deposit=prepY2+prepY3; y1Paid=perYear;
+        grand=y1Paid+deposit;
+        prepDetail={perYear,prepY2,prepY3,deposit,ir,irGtd:H.ir3Gtd,discount:H.d3_y1};
+    } else {
+        /* 5-Pay: 10% Y1 only, 4% non-guaranteed, Years 2-5 = full premium */
+        const ir=H.ir5,dr=H.d5_y1;
+        const y1=P*(1-dr)+levy;         // discounted Year 1
+        const fullYearly=P+levy;        // Years 2-5: full (no discount)
+        std={y1,fullYearly,total:y1+fullYearly*4,dr};
+        /* Deposit covers Years 2-5 at full premium using goal seek */
+        const prepB=gs5(fullYearly,ir,5);  // covers 4 more years of fullYearly
+        y1Paid=y1; deposit=prepB;
+        grand=y1+prepB;
+        prepDetail={y1,fullYearly,prepB,ir,irGtd:H.ir5Gtd,discount:dr};
     }
 
-    /* ── Prepayment ── */
-    let prepB, prepC;
-    if (payOpt === 2) {
-        // Q3: Year 2 prepay has 3.71% discount (no rider)
-        prepB = premium * (1 - PROMO.prepay2Y_noRider) / (1 + ir);
-        prepC = levy / (1 + ir);
+    R={product:'harvest',payOpt,P,levy,levyType,usdThb:getUsdThb(),usdHkd:getUsdHkd(),std,grand,deposit,y1Paid,...prepDetail};
+    renderHarvest(); showResults();
+}
+
+function showResults(){
+    $('resultsArea').style.display='block';
+    setTimeout(()=>$('resultsArea').scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+
+/* ════════════════════════════════════════════════
+   RENDER BLOSSOM
+════════════════════════════════════════════════ */
+function dRows(rows){
+    return rows.map(([l,v],i)=>`<div class="d-row"${i===rows.length-1?' style="font-weight:600;color:#1e3c72"':''}><span class="d-label">${l}</span><span class="d-value">${v}</span></div>`).join('');
+}
+
+function renderBlossom(){
+    const r=R;
+    $('stdCard').className='result-card';$('prepCard').className='result-card prep-card';
+    $('stdTitle').className='';$('prepTitle').className='';
+    $('prepCard').className='result-card prep-card';
+    $('prepAmt').className='result-amount';$('prepBdown').className='bdown';
+    const badge=r.rider?'<span class="sbadge wr">+Rider</span>':'<span class="sbadge nr">No Rider</span>';
+    if(r.payOpt===2){
+        $('stdTitle').innerHTML='Standard Payment'+badge;
+        $('stdSub').textContent=`Y1: ${pct(r.dr1)} off · Y2: ${r.dr2s>0?pct(r.dr2s)+' off':'full'} · Y2 prepay: ${pct(r.dr2p)} off`;
+        $('stdAmt').innerHTML=`${usd(r.y1)}<small>≈ ${thb(r.y1*r.usdThb)} (Year 1)</small>`;
+        $('stdDet').innerHTML=dRows([['Levy',`<span style="color:#2a5298">${r.levyType}</span>`],[`Year 1 (${pct(r.dr1)} disc + levy)`,usd(r.y1)],[`Year 2 (${r.dr2s>0?pct(r.dr2s)+' disc':'no disc'} + levy)`,usd(r.y2)],['Total (2 years)',usd(r.total)]]);
+        $('prepPill').innerHTML='<div class="info-pill">Y2 discounted '+pct(r.dr2p)+', PV at 4% non-guaranteed</div>';
     } else {
-        // Use known-exact value for default premium; goal-seek for others
-        if (Math.abs(premium - 12000.08) < 0.001) {
-            prepB = 39203.12;
-            prepC = 43.56;
-        } else {
-            prepB = goalSeek5Pay(discountedPremium, ir, 5);
-            prepC = goalSeek5Pay(levy,              ir, 5);
-        }
+        $('stdTitle').innerHTML='Standard Payment'+badge;
+        $('stdSub').textContent=`${pct(r.dr)} each year (Y1–Y5)`;
+        $('stdAmt').innerHTML=`${usd(r.yearlyPay)}<small>≈ ${thb(r.yearlyPay*r.usdThb)} / year</small>`;
+        $('stdDet').innerHTML=dRows([['Levy',`<span style="color:#2a5298">${r.levyType}</span>`],[`Annual (${pct(r.dr)} disc + levy)`,usd(r.yearlyPay)],['Total (5 years)',usd(r.total)]]);
+        $('prepPill').innerHTML='<div class="info-pill">Y2–Y5 Goal Seek PV at 4% non-guaranteed</div>';
     }
-    const prepTotal = prepB + prepC;
-    const grand     = discPlusLevy + prepTotal;
-
-    // Store
-    R = {
-        payOpt, premium, levy, levyType,
-        totalInitial, discountedPremium, discountAmt, discPlusLevy,
-        ...std, prepB, prepC, prepTotal, grand,
-        dr, ir, usdThb, usdHkd,
-        extraRate: PROMO.extraDiscRate,
-        years: payOpt,
-    };
-
-    renderResults();
-    $('resultsArea').style.display = 'block';
-    setTimeout(() => $('resultsArea').scrollIntoView({behavior:'smooth',block:'start'}), 50);
+    $('prepTitle').innerHTML='Prepayment Option'+badge;
+    $('prepSub').textContent='Pay all premiums upfront (lump sum)';
+    $('prepAmt').innerHTML=`${usd(r.grand)}<small>≈ ${thb(r.grand*r.usdThb)} (one-time)</small>`;
+    $('prepBdown').innerHTML=`<div class="b-row"><span>Year 1 payment (A)</span><span>${usd(r.y1Paid)}</span></div><div class="b-row"><span>Prepaid Premium (B)</span><span>${usd(r.prepB)}</span></div><div class="b-row"><span>Prepaid Levy (C)</span><span>${usd(r.prepC)}</span></div><div class="b-row"><span>Total Prepaid (B+C)</span><span>${usd(r.prepTotal)}</span></div><div class="b-row total"><span>Grand Total (A+B+C)</span><span>${usd(r.grand)}</span></div>`;
 }
 
-/* ════════════════════════════════════════════
-   RENDER RESULTS
-════════════════════════════════════════════ */
-function detailRows(rows) {
-    return rows.map(([l,v],i) =>
-        `<div class="d-row${i===rows.length-1?' last':''}" ${i===rows.length-1?'style="font-weight:700;color:#1e3c72"':''}>
-            <span class="d-label">${l}</span>
-            <span class="d-value">${v}</span>
-        </div>`
-    ).join('');
-}
+/* ════════════════════════════════════════════════
+   RENDER HARVEST (3-Pay & 5-Pay)
+════════════════════════════════════════════════ */
+function renderHarvest(){
+    const r=R,savings=r.std.total-r.grand;
+    $('stdCard').className='result-card harvest-card';$('prepCard').className='result-card harvest-prep';
+    $('stdTitle').className=$('prepTitle').className='harvest-h';
+    $('prepAmt').className='result-amount harvest-amt';
+    $('stdAmt').className='result-amount harvest-amt';
+    $('prepBdown').className='bdown harvest';
 
-function renderResults() {
-    const r = R;
-
-    /* Standard */
-    $('standardSubtitle').textContent =
-        r.payOpt === 2
-            ? `Year 1: ${(r.dr*100).toFixed(0)}% discount · Year 2: Full premium · Prepay Y2: ${(PROMO.prepay2Y_noRider*100).toFixed(2)}% off`
-            : `All ${r.years} years at ${(r.dr*100).toFixed(0)}% discount`;
-
-    if (r.payOpt === 2) {
-        $('standardAmount').innerHTML =
-            `${usd(r.year1)}<small>≈ ${thb(r.year1*r.usdThb)} (Year 1 payment)</small>`;
-        $('standardDetails').innerHTML = detailRows([
-            ['Levy Type',              `<span style="color:#2a5298">${r.levyType}</span>`],
-            ['Year 1 (10% disc + levy)', usd(r.year1)],
-            ['Year 2 (full + levy)',     usd(r.year2)],
-            ['Total (2 years)',          usd(r.total)],
-        ]);
+    if(r.payOpt===3){
+        /* ── 3-Pay ── */
+        $('stdTitle').innerHTML='Standard Payment <span class="sbadge hv">Harvest 3-Pay</span>';
+        $('prepTitle').innerHTML='Prepayment Option <span class="sbadge hv">4% GUARANTEED ✅</span>';
+        $('stdSub').textContent='จ่าย 3 ปีตามปกติ · ไม่มีส่วนลดเบี้ย (Q3 2026)';
+        $('prepSub').textContent='Year 1 จ่ายตรง + Prepay Year 2–3 ที่ 4% GUARANTEED';
+        $('stdAmt').innerHTML=`${usd(r.std.total)}<small>≈ ${thb(r.std.total*r.usdThb)}</small>`;
+        $('stdDet').innerHTML=dRows([['Levy',`<span style="color:#7c2d12">${r.levyType}</span>`],['Year 1 (full + levy)',usd(r.std.y1)],['Year 2 (full + levy)',usd(r.std.y2)],['Year 3 (full + levy)',usd(r.std.y3)],['Total (3 years)',usd(r.std.total)]]);
+        $('prepPill').innerHTML='<div class="gtd-pill">✅ 4% p.a. GUARANTEED · POD Account ครอบคลุม Year 2 และ Year 3</div>';
+        $('prepAmt').innerHTML=`${usd(r.grand)}<small>≈ ${thb(r.grand*r.usdThb)} (one-time)</small>`;
+        $('prepBdown').innerHTML=`<div class="b-row"><span>Year 1 payment (ไม่มีส่วนลด) (A)</span><span>${usd(r.y1Paid)}</span></div><div class="b-row"><span>Year 2 PV ที่ 4% guaranteed (B)</span><span>${usd(r.prepY2)}</span></div><div class="b-row"><span>Year 3 PV² ที่ 4% guaranteed (C)</span><span>${usd(r.prepY3)}</span></div><div class="b-row"><span>Deposit รวม (B+C)</span><span>${usd(r.deposit)}</span></div><div class="b-row total"><span>Grand Total (A+B+C)</span><span>${usd(r.grand)}</span></div><div style="margin-top:6px;font-size:10px;color:#7c2d12;line-height:1.4">💰 ประหยัด <strong>${usd(savings)}</strong> ≈ ${thb(savings*r.usdThb)}<br><small>ตัวเลขจริงอาจต่างเล็กน้อย (monthly POD)</small></div>`;
     } else {
-        $('standardAmount').innerHTML =
-            `${usd(r.yearlyPay)}<small>≈ ${thb(r.yearlyPay*r.usdThb)} per year</small>`;
-        $('standardDetails').innerHTML = detailRows([
-            ['Levy Type',                   `<span style="color:#2a5298">${r.levyType}</span>`],
-            ['Annual Payment (10% + levy)',  usd(r.yearlyPay)],
-            ['Total (5 years)',              usd(r.total)],
-        ]);
+        /* ── 5-Pay ── */
+        const savPct=(savings/r.std.total*100).toFixed(1);
+        $('stdTitle').innerHTML='Standard Payment <span class="sbadge hv">Harvest 5-Pay</span>';
+        $('prepTitle').innerHTML='Prepayment Option <span class="sbadge hv">4% non-GTD</span>';
+        $('stdSub').textContent=`Year 1: 10% discount · Year 2–5: full premium`;
+        $('prepSub').textContent='Year 1 (10% disc) + Prepay Year 2–5 ที่ 4% non-guaranteed';
+        $('stdAmt').innerHTML=`${usd(r.std.total)}<small>Y1: ${usd(r.std.y1)} disc · Y2–Y5: ${usd(r.fullYearly)}/yr · 5yr total ≈ ${thb(r.std.total*r.usdThb)}</small>`;
+        $('stdDet').innerHTML=dRows([['Levy',`<span style="color:#7c2d12">${r.levyType}</span>`],[`Year 1 (10% disc + levy)`,usd(r.std.y1)],['Year 2–5 (full + levy each)',usd(r.fullYearly)],['Total (5 years)',usd(r.std.total)]]);
+        $('prepPill').innerHTML='<div class="info-pill" style="border-color:#fcd34d;color:#92400e;background:#fffbeb">⚠️ 4% p.a. non-guaranteed · Year 2–5 Goal Seek PV (full premium)</div>';
+        $('prepAmt').innerHTML=`${usd(r.grand)}<small>≈ ${thb(r.grand*r.usdThb)} (one-time)</small>`;
+        $('prepBdown').innerHTML=`<div class="b-row"><span>Year 1 payment (10% disc) (A)</span><span>${usd(r.y1Paid)}</span></div><div class="b-row"><span>Deposit Year 2–5 (full, Goal Seek @ 4%) (B)</span><span>${usd(r.deposit)}</span></div><div class="b-row total"><span>Grand Total (A+B)</span><span>${usd(r.grand)}</span></div><div style="margin-top:6px;font-size:10px;color:#7c2d12;line-height:1.4">💰 ประหยัด <strong>${usd(savings)}</strong> ≈ ${thb(savings*r.usdThb)} (${savPct}%) vs 5 ปีตามปกติ</div>`;
     }
-
-    /* Prepayment */
-    $('prepayAmount').innerHTML =
-        `${usd(r.grand)}<small>≈ ${thb(r.grand*r.usdThb)} (one-time lump sum)</small>`;
-
-    const prepY2label = r.payOpt === 2
-        ? `Prepaid Y2 (3.71% disc → PV at 4%) (B)`
-        : `Prepaid Premium Y2–Y5 (B)`;
-    $('prepayBreakdown').innerHTML = `
-        <div class="b-row"><span>Total initial annual Premium</span><span>${usd(r.totalInitial)}</span></div>
-        <div class="b-row"><span>Premium after discount (A)</span><span>${usd(r.discPlusLevy)}</span></div>
-        <div class="b-row"><span>${prepY2label}</span><span>${usd(r.prepB)}</span></div>
-        <div class="b-row"><span>Prepaid Insurance Levy (C)</span><span>${usd(r.prepC)}</span></div>
-        <div class="b-row"><span>Total Prepaid (B + C)</span><span>${usd(r.prepTotal)}</span></div>
-        <div class="b-row total"><span>Grand Payment (A + B + C)</span><span>${usd(r.grand)}</span></div>
-    `;
 }
 
-/* ════════════════════════════════════════════
-   GOAL SEEK CALCULATOR
-════════════════════════════════════════════ */
-function runGoalSeek() {
-    const target = parseFloat($('targetAmount').value) || 0;
-    const payOpt = getPayOpt();
-    const minP   = MIN_PREMIUM[payOpt];
-    const ir     = PROMO.prepayInterest;
-    const dr     = payOpt === 2 ? PROMO.discount2Pay : PROMO.discount5Pay;
+/* ════════════════════════════════════════════════
+   GOAL SEEK
+════════════════════════════════════════════════ */
+function runGoalSeek(){
+    if(isHarvest()) runGsHarvest(); else runGsBlossom();
+}
 
-    if (target < 1000) { alert('Please enter a target of at least $1,000'); return; }
-
-    let lo = minP, hi = target * 4, found = minP;
-
-    for (let i = 0; i < 200; i++) {
-        const mid   = (lo + hi) / 2;
-        const lv    = calcLevyFor(mid);
-        const disc  = mid * (1 - dr);
-        const firstY = disc + lv;
+function runGsBlossom(){
+    const target=parseFloat($('targetAmount').value)||0,payOpt=getPayOpt(),rider=hasRider(),ir=PROMO.blossom.ir;
+    const minP=PROMO.blossom.minPrem[payOpt];
+    if(target<1000){alert('Please enter at least $1,000');return;}
+    let lo=minP,hi=target*4,found=minP;
+    for(let i=0;i<200;i++){
+        const mid=(lo+hi)/2,lv=calcLevy(mid);
+        const dr1=payOpt===2?(rider?PROMO.blossom.d2_y1_wr:PROMO.blossom.d2_y1_nr):(rider?PROMO.blossom.d5_wr:PROMO.blossom.d5_nr);
+        const disc=mid*(1-dr1),firstY=disc+lv;
         let grand;
-
-        if (payOpt === 2) {
-            // Q3: Y2 prepay has 3.71% discount
-            grand = firstY + mid*(1-PROMO.prepay2Y_noRider)/(1+ir) + lv/(1+ir);
-        } else {
-            grand = firstY + goalSeek5Pay(disc, ir, 5) + goalSeek5Pay(lv, ir, 5);
-        }
-
-        if (Math.abs(grand - target) < 0.5) { found = mid; break; }
-        grand < target ? lo = mid : hi = mid;
-        found = mid;
+        if(payOpt===2){const dr2p=rider?PROMO.blossom.d2_y2p_wr:PROMO.blossom.d2_y2p_nr;grand=firstY+mid*(1-dr2p)/(1+ir)+lv/(1+ir);}
+        else{grand=firstY+gs5(disc,ir,5)+gs5(lv,ir,5);}
+        if(Math.abs(grand-target)<0.5){found=mid;break;}
+        grand<target?lo=mid:hi=mid;found=mid;
     }
-
-    if (found < minP) found = minP;
-
-    $('goalPremium').textContent   = usd(found);
-    $('goalPayOpt').textContent    = `${payOpt}-Pay`;
-    $('goalTarget').textContent    = usd(target);
-    $('goalTargetThb').textContent = thb(target * getUsdThb());
-    $('goalPremiumThb').textContent = thb(found * getUsdThb());
-    $('goalResult').style.display  = 'block';
+    if(found<minP)found=minP;
+    showGsResult(found,`${payOpt}-Pay · ${rider?'With Rider':'No Rider'}`,target);
 }
 
-function calcLevyFor(premium) {
-    if ($('useManualLevy').checked) return parseFloat($('manualLevy').value) || 0;
-    return Math.min(premium * LEVY_RATE, LEVY_MAX_HKD / getUsdHkd());
+function runGsHarvest(){
+    const target=parseFloat($('targetAmount').value)||0,p=getPayOpt();
+    const H=PROMO.harvest,minP=H.minPrem[p]||3500;
+    if(target<1000){alert('Please enter at least $1,000');return;}
+    let lo=minP,hi=target*2,found=minP;
+    if(p===3){
+        /* 3-Pay: grand = (P+L) × K (closed form) */
+        const ir=H.ir3,K=1+1/(1+ir)+1/Math.pow(1+ir,2);
+        for(let i=0;i<200;i++){
+            const mid=(lo+hi)/2,lv=calcLevy(mid),grand=(mid+lv)*K;
+            if(Math.abs(grand-target)<0.5){found=mid;break;}
+            grand<target?lo=mid:hi=mid;found=mid;
+        }
+        showGsResult(Math.max(found,minP),'Harvest 3-Pay · 4% Guaranteed · No Rider',target);
+    } else {
+        /* 5-Pay: grand = P*(1-10%)+L + gs5(P+L, 4%, 5) */
+        const ir=H.ir5,dr=H.d5_y1;
+        hi=target*3;
+        for(let i=0;i<200;i++){
+            const mid=(lo+hi)/2,lv=calcLevy(mid);
+            const grand=mid*(1-dr)+lv+gs5(mid+lv,ir,5);
+            if(Math.abs(grand-target)<0.5){found=mid;break;}
+            grand<target?lo=mid:hi=mid;found=mid;
+        }
+        showGsResult(Math.max(found,minP),'Harvest 5-Pay · 10% Y1 · 4% non-GTD · No Rider',target);
+    }
 }
 
-/* ════════════════════════════════════════════
-   FULL ANALYSIS MODAL
-════════════════════════════════════════════ */
-function showAnalysisModal() {
-    if (!R.payOpt) { alert('Please calculate premium first.'); return; }
-    const r = R;
-    const savings = r.total - r.grand;
+function showGsResult(found,label,target){
+    const enteredP=parseFloat($('annualPremium').value)||0;
+    const increase=enteredP>0?(found-enteredP)/enteredP*100:0;
+    $('goalPremium').textContent=usd(found);
+    $('gPayOpt').textContent=label;$('gTarget').textContent=usd(target);
+    $('gTargetThb').textContent=thb(target*getUsdThb());$('gPremThb').textContent=thb(found*getUsdThb());
+    if(increase>0.01){$('gIncRow').style.display='flex';$('gIncrease').textContent=`+${increase.toFixed(2)}% vs entered`;}
+    else{$('gIncRow').style.display='none';}
+    $('goalResult').style.display='block';
+}
 
-    let schedHTML = '';
-    if (r.payOpt === 5) {
-        let bal = r.prepB;
-        let rows = '';
-        for (let y = 1; y <= 5; y++) {
-            const interest = y === 1 ? 0 : bal * r.ir;
-            const note     = y === 1 ? 'Paid directly (Year 1)' : 'Drawn from deposit';
-            if (y > 1) bal = Math.max(0, (bal - r.discountedPremium));
-            rows += `<tr>
-                <td>${y}</td>
-                <td>${usd(r.discPlusLevy)}</td>
-                <td>${usd(y===1 ? r.prepB : bal)}</td>
-                <td>${usd(interest)}</td>
-                <td style="font-size:10px;color:#666">${note}</td>
-            </tr>`;
-        }
-        schedHTML = `
-            <h4 style="color:#1e3c72;margin:16px 0 8px">Prepayment Schedule (5-Pay)</h4>
-            <table class="schedule-table">
-                <thead><tr><th>Yr</th><th>Premium Due</th><th>Deposit Bal.</th><th>Interest</th><th>Note</th></tr></thead>
-                <tbody>${rows}</tbody>
-            </table>`;
-    }
-
-    $('analysisContent').innerHTML = `
-        <div class="detail-box" style="margin-bottom:14px">
-            <h4 style="color:#1e3c72;margin-bottom:10px">Policy Configuration</h4>
-            ${detailRows([
-                ['Payment Option',        `${r.payOpt}-Pay`],
-                ['Annual Premium',        usd(r.premium)],
-                [`Levy (${r.levyType})`,  usd(r.levy)],
-                ['Premium Discount',      r.payOpt===2
-                    ? `${(r.dr*100).toFixed(0)}% Y1 · ${(PROMO.prepay2Y_noRider*100).toFixed(2)}% Y2 prepay`
-                    : `${(r.dr*100).toFixed(0)}% each year`],
-                ['Prepayment Interest',   `${(r.ir*100).toFixed(0)}% p.a. (non-guaranteed)`],
-                ['USD/THB Rate',          r.usdThb.toFixed(3)],
-                ['USD/HKD Rate',          r.usdHkd.toFixed(4)],
+/* ════════════════════════════════════════════════
+   ANALYSIS MODAL
+════════════════════════════════════════════════ */
+function showAnalysis(){
+    if(!R.product){alert('Please calculate first.');return;}
+    const r=R,hv=r.product==='harvest';
+    $('analysisHead').className='modal-head'+(hv?' harvest':'');
+    $('analysisSub').textContent=hv?'Harvest 3-Pay · No Rider · 4% GUARANTEED':`Blossom ${r.payOpt}-Pay · ${r.rider?'With Rider':'No Rider'}`;
+    const stdTot=hv?r.std.total:r.total,savings=stdTot-r.grand;
+    $('analysisBody').innerHTML=`
+        <div class="detail-box" style="margin-bottom:12px">
+            <div class="msec" style="margin-top:0">Policy Details</div>
+            ${dRows([
+                ['Product',hv?'🌾 Harvest 3-Pay':'🌸 Blossom '+r.payOpt+'-Pay'],
+                ['Annual Premium',usd(r.P)],
+                [`Levy (${r.levyType})`,usd(r.levy)],
+                ['Premium Discount',hv?'None (0%)':r.rider?`${pct(r.dr1||r.dr)} + ${pct(r.extraRate)} rider`:`${pct(r.dr1||r.dr)}`],
+                ['Prepay Interest',hv?'4% p.a. (GUARANTEED ✅)':'4% p.a. (non-guaranteed)'],
+                ['USD/THB',r.usdThb.toFixed(3)],['USD/HKD',r.usdHkd.toFixed(4)],
             ])}
         </div>
-        <div class="detail-box" style="margin-bottom:14px">
-            <h4 style="color:#1e3c72;margin-bottom:10px">Payment Comparison</h4>
-            ${detailRows([
-                ['Standard Total',   usd(r.total) + ` (≈ ${thb(r.total*r.usdThb)})`],
-                ['Prepayment Total', usd(r.grand)  + ` (≈ ${thb(r.grand*r.usdThb)})`],
-            ])}
-            <div class="d-row" style="color:${savings>=0?'#28a745':'#dc3545'};font-weight:700;font-size:14px">
-                <span class="d-label">${savings>=0?'💰 Savings (Prepay vs Standard)':'⚠️ Extra Cost'}</span>
-                <span class="d-value">${usd(Math.abs(savings))}</span>
+        <div class="detail-box" style="margin-bottom:12px">
+            <div class="msec" style="margin-top:0">Payment Comparison</div>
+            ${dRows([['Standard Total',usd(stdTot)+` ≈ ${thb(stdTot*r.usdThb)}`],['Prepayment Grand Total',usd(r.grand)+` ≈ ${thb(r.grand*r.usdThb)}`]])}
+            <div class="d-row" style="font-weight:700;font-size:13px;color:${savings>=0?'#28a745':'#dc3545'}">
+                <span class="d-label">💰 Savings (Prepay vs Standard)</span>
+                <span class="d-value">${usd(Math.abs(savings))} · ${thb(Math.abs(savings)*r.usdThb)}</span>
             </div>
         </div>
-        ${schedHTML}
-        <div style="background:#e3f2fd;border-radius:10px;padding:12px;margin-top:14px;font-size:11px;color:#004085">
-            <strong>⚠️ Note:</strong> Prepayment interest is non-guaranteed. Consult official Chubb Life illustration for binding figures.
-        </div>
-    `;
+        <div style="background:${hv?'#fef9e7':'#e3f2fd'};border-radius:9px;padding:11px;font-size:11px;color:${hv?'#7c2d12':'#004085'}">
+            ${hv?'✅ Harvest 3-Pay prepayment interest is <strong>4% p.a. GUARANTEED</strong>. Actual amounts may differ slightly from official illustration due to monthly POD deduction schedule.':'⚠️ Blossom prepayment interest is <strong>non-guaranteed</strong>. Consult official Chubb Life illustration for binding figures.'}
+        </div>`;
     openModal('analysisModal');
 }
 
-/* ════════════════════════════════════════════
-   EXTRA DISCOUNT MODAL
-════════════════════════════════════════════ */
-function showExtraModal() {
-    if (!R.payOpt) { alert('Please calculate premium first.'); return; }
-    const r  = R;
-    const er = r.extraRate;      // 2%
-    const ir = r.ir;             // 4%
-
-    // ── Extra discount effective rates ──────────────────────────
-    // 2-Pay: Y1 = base_rate + 2%, Y2 = 0% + 2% = 2%
-    // 5-Pay: all years = base_rate + 2%
-    let stdExtra, grandExtra;
-
-    if (r.payOpt === 2) {
-        // Q3: with rider: Y1 = 10%+2%=12%, Y2 std=2%, Y2 prepay=5.63%
-        const drY1rider = r.dr + er;                             // 10%+2% = 12% Year 1
-        const drY2std   = PROMO.std2Y_rider;                     // 2% Year 2 standard
-        const drY2prep  = PROMO.prepay2Y_rider;                  // 5.63% Year 2 prepay
-        const y1Extra   = r.premium * (1 - drY1rider) + r.levy;
-        const y2Extra   = r.premium * (1 - drY2std)   + r.levy;
-        stdExtra   = y1Extra + y2Extra;
-        grandExtra = y1Extra
-                   + r.premium * (1 - drY2prep) / (1 + ir)
-                   + r.levy / (1 + ir);
+/* ════════════════════════════════════════════════
+   EXTRA DISCOUNT MODAL (Blossom only)
+════════════════════════════════════════════════ */
+function showExtraModal(){
+    if(!R.product||R.product==='harvest'){return;}
+    const r=R,er=r.extraRate,ir=r.ir,B=PROMO.blossom;
+    let stdExtra,grandExtra;
+    if(r.payOpt===2){
+        const y1E=r.P*(1-(r.dr1+er))+r.levy,y2E=r.P*(1-B.d2_y2s_wr)+r.levy;
+        stdExtra=y1E+y2E;grandExtra=y1E+r.P*(1-B.d2_y2p_wr)/(1+ir)+r.levy/(1+ir);
     } else {
-        const drExtra5Pay = r.dr + er;                           // 10%+2%=12%
-        const ypExtra = r.premium * (1 - drExtra5Pay) + r.levy;
-        stdExtra  = ypExtra * 5;
-        const prepBExtra = goalSeek5Pay(r.premium * (1 - drExtra5Pay), ir, 5);
-        const prepCExtra = goalSeek5Pay(r.levy, ir, 5);
-        grandExtra = ypExtra + prepBExtra + prepCExtra;
+        const drE=r.dr+er,ypE=r.P*(1-drE)+r.levy;
+        stdExtra=ypE*5;grandExtra=ypE+gs5(r.P*(1-drE),ir,5)+gs5(r.levy,ir,5);
     }
-
-    const savingsStd  = r.total - stdExtra;
-    const savingsPrep = r.grand - grandExtra;
-
-    $('extraContent').innerHTML = `
+    const sStd=r.total-stdExtra,sPrep=r.grand-grandExtra;
+    $('extraBody').innerHTML=`
         <p style="font-size:12px;color:#666;margin-bottom:14px">
-            With <strong>Easy Shield Waiver of Premium Benefit Rider</strong>,
-            you get an extra <strong style="color:#dc3545">${(er*100).toFixed(0)}%</strong> discount
-            on every policy year (whole policy), stacked on top of the existing offer.
-            Policy must be signed in <strong>Hong Kong</strong>.
+            With <strong>Easy Shield Waiver of Premium Benefit Rider</strong>, extra <strong style="color:#dc3545">${(er*100).toFixed(0)}%</strong> discount each year (whole policy). HK signing required.
         </p>
-        <div class="cmp-grid">
-            <div class="cmp-card">
-                <h4>Standard Offer</h4>
-                <div style="font-size:11px;color:#6c757d;margin-bottom:6px">
-                    ${r.payOpt===2 ? '10% Y1 / full Y2 / 3.71% Y2 prepay' : '10% each year'}
-                </div>
-                <div class="cmp-amount">${usd(r.payOpt===2 ? r.year1 : r.yearlyPay)}</div>
-                <div style="font-size:11px;color:#6c757d;margin-top:8px">
-                    Prepay Grand: ${usd(r.grand)}<br>
-                    Standard Total: ${usd(r.total)}
-                </div>
+        <div class="cmp2">
+            <div class="cc"><h5>Standard Offer (No Rider)</h5>
+                <div style="font-size:10px;color:#6c757d;margin-bottom:5px">${r.payOpt===2?`10% Y1 / ${r.dr2s>0?pct(r.dr2s):'none'} Y2`:'10% each year'}</div>
+                <div class="ccamp">${usd(r.payOpt===2?r.y1:r.yearlyPay)}</div>
+                <div class="ccsub">Prepay: ${usd(r.grand)}<br>Standard: ${usd(r.total)}</div>
             </div>
-            <div class="cmp-card" style="border-color:#dc3545;background:#fff5f5">
-                <h4 style="color:#dc3545">Extra Offer (+2% Rider) 🏷️</h4>
-                <div style="font-size:11px;color:#6c757d;margin-bottom:6px">
-                    ${r.payOpt===2 ? '12% Y1 / 2% Y2 std / 5.63% Y2 prepay' : '12% each year'}
-                </div>
-                <div class="cmp-amount" style="color:#dc3545">${usd(grandExtra)}</div>
-                <div style="font-size:11px;color:#6c757d;margin-top:8px">
-                    Prepay Grand: ${usd(grandExtra)}<br>
-                    Standard Total: ${usd(stdExtra)}
-                </div>
+            <div class="cc rd"><h5 class="red">🏷️ With Rider (+2%)</h5>
+                <div style="font-size:10px;color:#6c757d;margin-bottom:5px">${r.payOpt===2?'12% Y1 / 2% Y2 std / 5.63% Y2 prep':'12% each year'}</div>
+                <div class="ccamp red">${usd(grandExtra)}</div>
+                <div class="ccsub">Prepay: ${usd(grandExtra)}<br>Standard: ${usd(stdExtra)}</div>
             </div>
         </div>
-        <div class="savings-box">
-            <div style="font-size:12px;opacity:0.9">Total Savings with Rider (Prepayment)</div>
-            <div class="sav-amt">${usd(savingsPrep)}</div>
-            <div style="font-size:11px;opacity:0.85;margin-top:4px">
-                Standard savings: ${usd(savingsStd)} &nbsp;|&nbsp;
-                ≈ ${thb(savingsPrep * r.usdThb)}
-            </div>
-        </div>
-        <div style="background:#fff3cd;border:1px solid #ffd700;border-radius:10px;padding:12px;margin-top:14px;font-size:11px;color:#856404">
-            <strong>⚠️ Conditions:</strong> Rider must be subscribed together with main plan during promotion period.
-            In-person signing in Hong Kong is required. Prepayment interest is non-guaranteed.
-        </div>
-    `;
+        ${sPrep>0?`<div class="sstrip"><div style="font-size:10px;opacity:.9">Rider saves (Prepayment)</div><div class="sa">${usd(sPrep)}</div><div class="ss">≈ ${thb(sPrep*r.usdThb)} | Standard savings: ${usd(sStd)}</div></div>`:''}
+        <div style="background:#fff3cd;border:1px solid #ffd700;border-radius:9px;padding:10px;margin-top:12px;font-size:11px;color:#856404">
+            ⚠️ Rider requires in-person signing in Hong Kong (1 Jul–30 Sep 2026). Prepayment interest is non-guaranteed.
+        </div>`;
     openModal('extraModal');
 }
 
-/* ════════════════════════════════════════════
-   UTILITIES
-════════════════════════════════════════════ */
-function openModal(id)  { $(id).classList.add('show'); }
-function closeModal(id) { $(id).classList.remove('show'); }
-function showLoading(on) {
-    $('spinner').style.display = on ? 'block' : 'none';
-    $('btnLabel').textContent  = on ? 'Calculating…' : 'Calculate Premium';
-    $('calcBtn').disabled      = on;
+/* ════════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════════ */
+function openModal(id){$(id).classList.add('show');}
+function closeModal(id){$(id).classList.remove('show');}
+function showLoading(on){
+    $('spinner').style.display=on?'block':'none';
+    $('calcBtn').disabled=on;
+    updateBtnLabel(on);
 }
 
-/* ── Service Worker Registration ── */
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
-        reg.addEventListener('updatefound', () => {
-            const w = reg.installing;
-            w.addEventListener('statechange', () => {
-                if (w.state === 'installed' && navigator.serviceWorker.controller) {
-                    $('updateBanner').classList.add('show');
-                }
-            });
-        });
-    }).catch(e => console.log('SW registration failed:', e));
+if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').then(reg=>reg.addEventListener('updatefound',()=>{
+        const w=reg.installing;w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)$('updateBanner').classList.add('show');});
+    })).catch(()=>{}); /* suppress 404 in preview/dev environments */
 }
 </script>
 </body>
