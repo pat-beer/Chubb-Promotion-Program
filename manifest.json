@@ -1,14 +1,24 @@
 {
   "name": "Chubb Life – My Legacy Plan V Blossom Calculator",
   "short_name": "Chubb Calc",
-  "description": "Premium calculator for Chubb Life My Legacy Plan V Blossom (2-Pay & 5-Pay) – Q3 2026",
+  "description": "Premium calculator for Chubb Life My Legacy Plan V Blossom (2-Pay & 5-Pay)",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1e3c72",
   "theme_color": "#1e3c72",
   "orientation": "portrait-primary",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
